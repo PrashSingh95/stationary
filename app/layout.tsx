@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'PaperNest Stationery',
-    template: '%s | PaperNest Stationery',
+    default: 'BABA PUSTAK BHANDAR',
+    template: '%s | BABA PUSTAK BHANDAR',
   },
   description:
     'Browse school, office, art, printing, and everyday stationery essentials with WhatsApp ordering.',
   openGraph: {
-    title: 'PaperNest Stationery',
+    title: 'BABA PUSTAK BHANDAR',
     description:
       'A clean local stationery shop storefront for products, categories, details, and WhatsApp orders.',
     images: ['/images/stationery-hero.png'],

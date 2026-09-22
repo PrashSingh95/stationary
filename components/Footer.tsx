@@ -8,7 +8,7 @@ export function Footer() {
     <footer className="border-t border-border bg-zinc-950 text-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr] lg:px-8">
         <div>
-          <p className="text-lg font-bold">PaperNest Stationery</p>
+          <p className="text-lg font-bold">BABA PUSTAK BHANDAR</p>
           <p className="mt-3 max-w-md text-sm leading-6 text-zinc-300">
             A friendly local shop for school, office, art, printing, and
             everyday stationery essentials.

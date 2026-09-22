@@ -185,7 +185,7 @@ export const products: Product[] = [
 ];
 
 export const shop = {
-  name: 'PaperNest Stationery',
+  name: 'BABA PUSTAK BHANDAR',
   phone: '919876543210',
   displayPhone: '+91 98765 43210',
   address: 'MG Road, Near City School, Pune',

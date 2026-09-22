@@ -5,7 +5,7 @@ import { makeWhatsAppUrl } from '@/data/products';
 export function WhatsAppButton() {
   return (
     <a
-      aria-label="Contact PaperNest on WhatsApp"
+      aria-label="Contact BABA PUSTAK BHANDAR on WhatsApp"
       className="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-emerald-500 text-white shadow-2xl shadow-emerald-900/25 transition hover:scale-105"
       href={makeWhatsAppUrl()}
       target="_blank"

@@ -6,7 +6,7 @@ import { makeWhatsAppUrl, shop } from '@/data/products';
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: 'Contact PaperNest Stationery by phone, WhatsApp, or visiting the store.',
+  description: 'Contact BABA PUSTAK BHANDAR by phone, WhatsApp, or visiting the store.',
 };
 
 export default function ContactPage() {

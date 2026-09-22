@@ -6,7 +6,7 @@ import { SiteShell } from '@/components/SiteShell';
 
 export const metadata: Metadata = {
   title: 'About',
-  description: 'Learn about PaperNest Stationery and the shop experience.',
+  description: 'Learn about BABA PUSTAK BHANDAR and the shop experience.',
 };
 
 export default function AboutPage() {
@@ -22,7 +22,7 @@ export default function AboutPage() {
               A practical stationery store for daily school and office needs.
             </h1>
             <p className="mt-5 leading-7 text-muted-foreground">
-              PaperNest Stationery helps students, parents, teachers, artists,
+              BABA PUSTAK BHANDAR helps students, parents, teachers, artists,
               and offices quickly find the essentials they need. Phase 1 keeps
               the experience simple: browse, search, check details, and contact
               the shop on WhatsApp.

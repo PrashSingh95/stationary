@@ -17,9 +17,9 @@ export function Navbar() {
             <ShoppingBag className="size-5" />
           </span>
           <span className="leading-tight">
-            PaperNest
+            BABA PUSTAK
             <span className="block text-xs font-medium text-muted-foreground">
-              Stationery
+              BHANDAR
             </span>
           </span>
         </Link>
