@@ -13,10 +13,12 @@ import { CategoryCard } from '@/components/CategoryCard';
 import { ProductCard } from '@/components/ProductCard';
 import { SectionHeader } from '@/components/SectionHeader';
 import { SiteShell } from '@/components/SiteShell';
-import { categories } from '@/data/categories';
-import { makeWhatsAppUrl, products, shop } from '@/data/products';
+import { makeWhatsAppUrl, shop } from '@/data/products';
+import { listCategories, listProducts } from '@/lib/api/products';
 
-export default function Home() {
+export default async function Home() {
+  const categories = await listCategories();
+  const products = await listProducts();
   const featuredProducts = products.filter((product) => product.featured).slice(0, 4);
   const popularProducts = products.filter((product) => product.popular).slice(0, 4);
 

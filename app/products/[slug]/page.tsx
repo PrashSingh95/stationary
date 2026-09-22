@@ -5,19 +5,19 @@ import { ArrowLeft, MessageCircle, PackageCheck, Star } from 'lucide-react';
 
 import { ProductVisual } from '@/components/ProductVisual';
 import { SiteShell } from '@/components/SiteShell';
-import { getCategory } from '@/data/categories';
-import { getProduct, makeWhatsAppUrl, products } from '@/data/products';
+import { makeWhatsAppUrl, products } from '@/data/products';
+import { getCategory, getProduct } from '@/lib/api/products';
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
-}): Metadata {
-  const product = getProduct(params.slug);
+}): Promise<Metadata> {
+  const product = await getProduct(params.slug);
 
   if (!product) return {};
 
@@ -32,16 +32,16 @@ export function generateMetadata({
   };
 }
 
-export default function ProductDetailPage({
+export default async function ProductDetailPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const product = getProduct(params.slug);
+  const product = await getProduct(params.slug);
 
   if (!product) notFound();
 
-  const category = getCategory(product.category);
+  const category = await getCategory(product.category);
 
   return (
     <SiteShell>

@@ -3,14 +3,16 @@ import type { Metadata } from 'next';
 import { CategoryCard } from '@/components/CategoryCard';
 import { SectionHeader } from '@/components/SectionHeader';
 import { SiteShell } from '@/components/SiteShell';
-import { categories } from '@/data/categories';
+import { listCategories } from '@/lib/api/products';
 
 export const metadata: Metadata = {
   title: 'Categories',
   description: 'Browse stationery categories for school, office, art, and printing needs.',
 };
 
-export default function CategoriesPage() {
+export default async function CategoriesPage() {
+  const categories = await listCategories();
+
   return (
     <SiteShell>
       <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

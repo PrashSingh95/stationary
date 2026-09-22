@@ -4,19 +4,22 @@ import { notFound } from 'next/navigation';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ShopFilters } from '@/components/ShopFilters';
 import { SiteShell } from '@/components/SiteShell';
-import { categories, getCategory } from '@/data/categories';
-import { products } from '@/data/products';
+import { categories } from '@/data/categories';
+import {
+  getCategory,
+  listProducts,
+} from '@/lib/api/products';
 
 export function generateStaticParams() {
   return categories.map((category) => ({ slug: category.slug }));
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
-}): Metadata {
-  const category = getCategory(params.slug);
+}): Promise<Metadata> {
+  const category = await getCategory(params.slug);
 
   if (!category) return {};
 
@@ -26,14 +29,16 @@ export function generateMetadata({
   };
 }
 
-export default function CategoryPage({
+export default async function CategoryPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const category = getCategory(params.slug);
+  const category = await getCategory(params.slug);
 
   if (!category) notFound();
+
+  const products = await listProducts();
 
   return (
     <SiteShell>
