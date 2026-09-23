@@ -30,3 +30,17 @@ go run ./cmd/server
 - `PATCH /api/v1/cart/items/{id}`
 - `DELETE /api/v1/cart/items/{id}`
 - `DELETE /api/v1/cart`
+- `GET /api/v1/addresses`
+- `POST /api/v1/addresses`
+- `PATCH /api/v1/addresses/{id}`
+- `DELETE /api/v1/addresses/{id}`
+- `POST /api/v1/orders`
+- `GET /api/v1/orders`
+- `GET /api/v1/orders/{id}`
+- `POST /api/v1/orders/{id}/cancel`
+- `GET /api/v1/admin/orders`
+- `PATCH /api/v1/admin/orders/{id}/status`
+- `POST /api/v1/admin/products`
+- `PATCH /api/v1/admin/products/{id}`
+- `DELETE /api/v1/admin/products/{id}`
+- `GET /api/v1/admin/inventory`

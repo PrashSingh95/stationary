@@ -52,15 +52,21 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	role := "customer"
+	if request.Email == strings.ToLower(strings.TrimSpace(s.config.AdminEmail)) {
+		role = "admin"
+	}
+
 	var user userResponse
 	err = s.db.QueryRow(
 		r.Context(),
-		`insert into users (name, email, password_hash)
-		 values ($1, $2, $3)
+		`insert into users (name, email, password_hash, role)
+		 values ($1, $2, $3, $4)
 		 returning id::text, name, email, role, created_at::text`,
 		request.Name,
 		request.Email,
 		string(hash),
+		role,
 	).Scan(&user.ID, &user.Name, &user.Email, &user.Role, &user.CreatedAt)
 	if err != nil {
 		writeError(w, http.StatusConflict, "ACCOUNT_EXISTS", "An account with this email already exists")

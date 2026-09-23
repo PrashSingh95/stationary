@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import { Menu, Search, ShoppingBag } from 'lucide-react';
+import { CartNavButton } from '@/components/commerce/CartNavButton';
 
 export function Navbar() {
   const links = [
     ['Categories', '/categories'],
     ['Products', '/products'],
+    ['Orders', '/orders'],
+    ['Admin', '/admin'],
     ['About', '/about'],
     ['Contact', '/contact'],
   ];
@@ -44,6 +47,7 @@ export function Navbar() {
           >
             <Search className="size-4" />
           </Link>
+          <CartNavButton />
           <Link
             className="hidden rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800 sm:inline-flex"
             href="/contact"

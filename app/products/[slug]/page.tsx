@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, MessageCircle, PackageCheck, Star } from 'lucide-react';
 
+import { AddToCartButton } from '@/components/commerce/AddToCartButton';
 import { ProductVisual } from '@/components/ProductVisual';
 import { SiteShell } from '@/components/SiteShell';
 import { makeWhatsAppUrl, products } from '@/data/products';
@@ -116,15 +117,18 @@ export default async function ProductDetailPage({
               </ul>
             </div>
 
-            <a
-              className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-5 font-semibold text-white transition hover:bg-teal-800"
-              href={makeWhatsAppUrl(product)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <MessageCircle className="size-5" />
-              WhatsApp to order
-            </a>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <AddToCartButton product={product} className="h-12" />
+              <a
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-border px-5 font-semibold transition hover:border-teal-300"
+                href={makeWhatsAppUrl(product)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle className="size-5" />
+                WhatsApp
+              </a>
+            </div>
           </div>
         </section>
       </main>

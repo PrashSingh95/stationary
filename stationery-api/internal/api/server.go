@@ -54,6 +54,33 @@ func (s *Server) Routes() http.Handler {
 			r.Delete("/items/{id}", s.deleteCartItem)
 			r.Delete("/", s.clearCart)
 		})
+
+		r.Route("/addresses", func(r chi.Router) {
+			r.Use(s.requireAuth)
+			r.Get("/", s.listAddresses)
+			r.Post("/", s.createAddress)
+			r.Patch("/{id}", s.updateAddress)
+			r.Delete("/{id}", s.deleteAddress)
+		})
+
+		r.Route("/orders", func(r chi.Router) {
+			r.Use(s.requireAuth)
+			r.Post("/", s.createOrder)
+			r.Get("/", s.listOrders)
+			r.Get("/{id}", s.getOrder)
+			r.Post("/{id}/cancel", s.cancelOrder)
+		})
+
+		r.Route("/admin", func(r chi.Router) {
+			r.Use(s.requireAuth)
+			r.Use(s.requireAdmin)
+			r.Get("/orders", s.adminListOrders)
+			r.Patch("/orders/{id}/status", s.adminUpdateOrderStatus)
+			r.Post("/products", s.adminCreateProduct)
+			r.Patch("/products/{id}", s.adminUpdateProduct)
+			r.Delete("/products/{id}", s.adminDeleteProduct)
+			r.Get("/inventory", s.adminInventory)
+		})
 	})
 
 	return router

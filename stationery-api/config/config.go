@@ -11,6 +11,7 @@ type Config struct {
 	JWTSecret      string
 	CookieSecure   bool
 	FrontendOrigin string
+	AdminEmail     string
 }
 
 func Load() Config {
@@ -20,6 +21,7 @@ func Load() Config {
 		JWTSecret:      env("JWT_SECRET", "dev-secret-change-me"),
 		CookieSecure:   envBool("COOKIE_SECURE", false),
 		FrontendOrigin: env("FRONTEND_ORIGIN", "http://localhost:3000"),
+		AdminEmail:     env("ADMIN_EMAIL", "admin@bpb.local"),
 	}
 }
 

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { MessageCircle, PackageCheck } from 'lucide-react';
 
+import { AddToCartButton } from '@/components/commerce/AddToCartButton';
 import { makeWhatsAppUrl } from '@/data/products';
 import type { Product } from '@/types/product';
 import { ProductVisual } from '@/components/ProductVisual';
@@ -43,15 +44,18 @@ export function ProductCard({ product }: { product: Product }) {
             {product.inStock ? 'In stock' : 'Ask shop'}
           </span>
         </div>
-        <a
-          className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-3 text-sm font-semibold text-white transition hover:bg-teal-800"
-          href={makeWhatsAppUrl(product)}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <MessageCircle className="size-4" />
-          WhatsApp to order
-        </a>
+        <div className="grid gap-2">
+          <AddToCartButton product={product} className="h-9 w-full" />
+          <a
+            className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold transition hover:border-teal-300"
+            href={makeWhatsAppUrl(product)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <MessageCircle className="size-4" />
+            WhatsApp
+          </a>
+        </div>
       </div>
     </article>
   );
