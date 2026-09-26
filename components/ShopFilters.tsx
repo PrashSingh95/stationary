@@ -7,6 +7,7 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { categories } from '@/data/categories';
 import type { Product } from '@/types/product';
 import { ProductCard } from '@/components/ProductCard';
+import { useCommerce } from '@/components/commerce/CommerceProvider';
 
 type SortMode = 'popular' | 'low' | 'high';
 
@@ -20,11 +21,13 @@ export function ShopFilters({
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(initialCategory);
   const [sort, setSort] = useState<SortMode>('popular');
+  const { products: managedProducts } = useCommerce();
+  const displayProducts = managedProducts.length ? managedProducts : products;
 
   const visibleProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return products
+    return displayProducts
       .filter((product) => {
         const matchesCategory =
           category === 'all' || product.category === category;
@@ -45,7 +48,7 @@ export function ShopFilters({
         if (sort === 'high') return b.price - a.price;
         return Number(b.popular || b.featured) - Number(a.popular || a.featured);
       });
-  }, [category, products, query, sort]);
+  }, [category, displayProducts, query, sort]);
 
   return (
     <section className="space-y-6">

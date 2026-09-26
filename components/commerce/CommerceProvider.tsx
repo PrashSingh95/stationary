@@ -29,6 +29,7 @@ type CommerceContextValue = {
   user: CommerceUser | null;
   cart: CartLine[];
   orders: Order[];
+  products: Product[];
   productsById: Map<string, Product>;
   cartItems: Array<{ product: Product; quantity: number; subtotal: number }>;
   cartCount: number;
@@ -42,6 +43,10 @@ type CommerceContextValue = {
   clearCart: () => void;
   placeOrder: (input: CheckoutInput) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  createProduct: (product: Product) => void;
+  updateProduct: (product: Product) => void;
+  deleteProduct: (productId: string) => void;
+  updateProductStock: (productId: string, stockQuantity: number) => void;
 };
 
 const storageKey = 'bpb-commerce-v1';
@@ -51,12 +56,17 @@ type StoredState = {
   user: CommerceUser | null;
   cart: CartLine[];
   orders: Order[];
+  products: Product[];
 };
 
 const initialState: StoredState = {
   user: null,
   cart: [],
   orders: [],
+  products: products.map((product) => ({
+    ...product,
+    stockQuantity: product.stockQuantity ?? (product.inStock ? 20 : 0),
+  })),
 };
 
 export function CommerceProvider({ children }: { children: ReactNode }) {
@@ -67,14 +77,20 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     if (!stored) return initialState;
 
     try {
-      return JSON.parse(stored) as StoredState;
+      const parsed = JSON.parse(stored) as Partial<StoredState>;
+      return {
+        user: parsed.user ?? null,
+        cart: parsed.cart ?? [],
+        orders: parsed.orders ?? [],
+        products: parsed.products?.length ? parsed.products : initialState.products,
+      };
     } catch {
       return initialState;
     }
   });
   const productsById = useMemo(
-    () => new Map(products.map((product) => [product.id, product])),
-    [],
+    () => new Map(state.products.map((product) => [product.id, product])),
+    [state.products],
   );
 
   useEffect(() => {
@@ -119,6 +135,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     user: state.user,
     cart: state.cart,
     orders: state.orders,
+    products: state.products,
     productsById,
     cartItems,
     cartCount,
@@ -189,6 +206,20 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         user,
         cart: [],
         orders: [order, ...current.orders],
+        products: current.products.map((product) => {
+          const ordered = cartItems.find((item) => item.product.id === product.id);
+          if (!ordered) return product;
+          const nextStock = Math.max(
+            0,
+            (product.stockQuantity ?? (product.inStock ? 20 : 0)) -
+              ordered.quantity,
+          );
+          return {
+            ...product,
+            stockQuantity: nextStock,
+            inStock: nextStock > 0,
+          };
+        }),
       }));
       return order;
     },
@@ -197,6 +228,58 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         ...current,
         orders: current.orders.map((order) =>
           order.id === orderId ? { ...order, status } : order,
+        ),
+      }));
+    },
+    createProduct(product) {
+      setState((current) => ({
+        ...current,
+        products: [
+          {
+            ...product,
+            stockQuantity:
+              product.stockQuantity ?? (product.inStock ? 1 : 0),
+            inStock: (product.stockQuantity ?? (product.inStock ? 1 : 0)) > 0,
+          },
+          ...current.products.filter((item) => item.id !== product.id),
+        ],
+      }));
+    },
+    updateProduct(product) {
+      setState((current) => ({
+        ...current,
+        products: current.products.map((item) =>
+          item.id === product.id
+            ? {
+                ...product,
+                stockQuantity:
+                  product.stockQuantity ?? (product.inStock ? 1 : 0),
+                inStock:
+                  (product.stockQuantity ?? (product.inStock ? 1 : 0)) > 0,
+              }
+            : item,
+        ),
+      }));
+    },
+    deleteProduct(productId) {
+      setState((current) => ({
+        ...current,
+        products: current.products.filter((product) => product.id !== productId),
+        cart: current.cart.filter((line) => line.productId !== productId),
+      }));
+    },
+    updateProductStock(productId, stockQuantity) {
+      const nextStock = Math.max(0, stockQuantity);
+      setState((current) => ({
+        ...current,
+        products: current.products.map((product) =>
+          product.id === productId
+            ? {
+                ...product,
+                stockQuantity: nextStock,
+                inStock: nextStock > 0,
+              }
+            : product,
         ),
       }));
     },

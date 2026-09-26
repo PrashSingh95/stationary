@@ -12,6 +12,7 @@ export type Product = {
   featured: boolean;
   popular?: boolean;
   specs: string[];
+  stockQuantity?: number;
 };
 
 export type Category = {
