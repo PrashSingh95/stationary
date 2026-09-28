@@ -70,32 +70,40 @@ const initialState: StoredState = {
 };
 
 export function CommerceProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StoredState>(() => {
-    if (typeof window === 'undefined') return initialState;
-
-    const stored = window.localStorage.getItem(storageKey);
-    if (!stored) return initialState;
-
-    try {
-      const parsed = JSON.parse(stored) as Partial<StoredState>;
-      return {
-        user: parsed.user ?? null,
-        cart: parsed.cart ?? [],
-        orders: parsed.orders ?? [],
-        products: parsed.products?.length ? parsed.products : initialState.products,
-      };
-    } catch {
-      return initialState;
-    }
-  });
+  const [state, setState] = useState<StoredState>(initialState);
+  const [hasLoadedStoredState, setHasLoadedStoredState] = useState(false);
   const productsById = useMemo(
     () => new Map(state.products.map((product) => [product.id, product])),
     [state.products],
   );
 
   useEffect(() => {
+    queueMicrotask(() => {
+      const stored = window.localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as Partial<StoredState>;
+          setState({
+            user: parsed.user ?? null,
+            cart: parsed.cart ?? [],
+            orders: parsed.orders ?? [],
+            products: parsed.products?.length
+              ? parsed.products
+              : initialState.products,
+          });
+        } catch {
+          setState(initialState);
+        }
+      }
+
+      setHasLoadedStoredState(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedStoredState) return;
     window.localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [state]);
+  }, [hasLoadedStoredState, state]);
 
   const cartItems = useMemo(
     () =>

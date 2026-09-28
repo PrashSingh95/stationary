@@ -1,33 +1,9 @@
-import {
-  BookOpen,
-  BriefcaseBusiness,
-  ClipboardList,
-  Copy,
-  FileText,
-  FolderOpen,
-  Highlighter,
-  NotebookPen,
-  Paintbrush,
-  Paperclip,
-  Pencil,
-  PenLine,
-  Printer,
-  Ruler,
-} from 'lucide-react';
+import Image from 'next/image';
+import { Copy, FileText } from 'lucide-react';
+
+import { getProductImageSrc } from '@/lib/product-images';
 
 const iconMap = {
-  notebook: NotebookPen,
-  pen: PenLine,
-  colors: Paintbrush,
-  pencil: Pencil,
-  sticky: ClipboardList,
-  folder: FolderOpen,
-  geometry: Ruler,
-  print: Printer,
-  glue: Highlighter,
-  register: BookOpen,
-  clips: Paperclip,
-  exam: BriefcaseBusiness,
   default: FileText,
 };
 
@@ -56,9 +32,33 @@ export function ProductVisual({
   label: string;
   large?: boolean;
 }) {
-  const Icon = iconMap[type as keyof typeof iconMap] ?? iconMap.default;
+  const imageSrc = getProductImageSrc(type);
+  const Icon = iconMap.default;
   const palette =
     paletteMap[type as keyof typeof paletteMap] ?? paletteMap.default;
+
+  if (imageSrc) {
+    return (
+      <div
+        aria-label={label}
+        className={`relative overflow-hidden rounded-lg border border-border bg-[#f7f1e8] ${
+          large ? 'min-h-[360px]' : 'aspect-[4/3]'
+        } shadow-inner`}
+      >
+        <Image
+          alt={label}
+          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+          fill
+          sizes={
+            large
+              ? '(min-width: 1024px) 54vw, 100vw'
+              : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
+          }
+          src={imageSrc}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
