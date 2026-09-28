@@ -17,5 +17,13 @@ export type ProductImageKey = keyof typeof productImageMap;
 
 export function getProductImageSrc(type: string | undefined) {
   if (!type) return undefined;
+  if (
+    type.startsWith('data:image/') ||
+    type.startsWith('/') ||
+    type.startsWith('http://') ||
+    type.startsWith('https://')
+  ) {
+    return type;
+  }
   return productImageMap[type as ProductImageKey];
 }
