@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { type ChangeEvent, useMemo, useState } from 'react';
 import {
   Boxes,
   IndianRupee,
@@ -12,8 +12,10 @@ import {
   Users,
 } from 'lucide-react';
 
+import { ProductVisual } from '@/components/ProductVisual';
 import { categories } from '@/data/categories';
 import { useCommerce } from '@/components/commerce/CommerceProvider';
+import { productImageMap } from '@/lib/product-images';
 import type { OrderStatus } from '@/types/commerce';
 import type { Product } from '@/types/product';
 
@@ -70,6 +72,7 @@ export function AdminDashboard() {
   } = useCommerce();
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [imageError, setImageError] = useState('');
 
   const revenue = orders.reduce((sum, order) => sum + order.total, 0);
   const lowStock = products.filter(
@@ -85,6 +88,7 @@ export function AdminDashboard() {
   }));
 
   function updateForm(field: keyof ProductForm, value: string | boolean) {
+    if (field === 'image') setImageError('');
     setForm((current) => {
       const next = { ...current, [field]: value };
       if (field === 'name' && !editingId) {
@@ -96,6 +100,7 @@ export function AdminDashboard() {
 
   function editProduct(product: Product) {
     setEditingId(product.id);
+    setImageError('');
     setForm({
       id: product.id,
       name: product.name,
@@ -122,7 +127,26 @@ export function AdminDashboard() {
       createProduct(product);
     }
     setEditingId(null);
+    setImageError('');
     setForm(emptyForm);
+  }
+
+  async function uploadProductImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setImageError('Please choose an image file.');
+      return;
+    }
+
+    try {
+      const image = await resizeImage(file);
+      updateForm('image', image);
+    } catch {
+      setImageError('Image could not be loaded. Try another file.');
+    }
   }
 
   return (
@@ -262,11 +286,48 @@ export function AdminDashboard() {
               type="number"
               value={form.originalPrice}
             />
-            <AdminInput
-              label="Product visual key"
-              onChange={(value) => updateForm('image', value)}
-              value={form.image}
-            />
+            <div className="grid gap-3 rounded-lg border border-border p-3">
+              <div className="grid gap-3 sm:grid-cols-[110px_1fr]">
+                <ProductVisual label={form.name || 'Product image'} type={form.image} />
+                <div className="grid gap-2">
+                  <label>
+                    <span className="text-sm font-medium">Product image</span>
+                    <input
+                      accept="image/*"
+                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                      onChange={uploadProductImage}
+                      type="file"
+                    />
+                  </label>
+                  <label>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Or choose preset
+                    </span>
+                    <select
+                      className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+                      onChange={(event) => updateForm('image', event.target.value)}
+                      value={
+                        form.image in productImageMap
+                          ? form.image
+                          : ''
+                      }
+                    >
+                      <option value="">Uploaded/custom image</option>
+                      {Object.keys(productImageMap).map((key) => (
+                        <option key={key} value={key}>
+                          {key}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {imageError ? (
+                    <p className="text-xs font-medium text-rose-700">
+                      {imageError}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
             <label>
               <span className="text-sm font-medium">Description</span>
               <textarea
@@ -317,6 +378,7 @@ export function AdminDashboard() {
                 className="h-10 rounded-lg border border-border px-4 text-sm font-semibold"
                 onClick={() => {
                   setEditingId(null);
+                  setImageError('');
                   setForm(emptyForm);
                 }}
                 type="button"
@@ -348,10 +410,18 @@ export function AdminDashboard() {
                   return (
                     <tr className="border-b border-border" key={product.id}>
                       <td className="py-3">
-                        <p className="font-semibold">{product.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {product.brand}
-                        </p>
+                        <div className="grid grid-cols-[56px_1fr] items-center gap-3">
+                          <ProductVisual
+                            label={product.name}
+                            type={product.images[0]}
+                          />
+                          <div>
+                            <p className="font-semibold">{product.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {product.brand}
+                            </p>
+                          </div>
+                        </div>
                       </td>
                       <td>{categoryName(product.category)}</td>
                       <td>₹{product.price}</td>
@@ -487,6 +557,43 @@ function formToProduct(form: ProductForm, editingId: string | null): Product {
       .filter(Boolean),
     stockQuantity,
   };
+}
+
+function resizeImage(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read image.'));
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        reject(new Error('Could not read image.'));
+        return;
+      }
+
+      const image = new Image();
+      image.onerror = () => reject(new Error('Could not load image.'));
+      image.onload = () => {
+        const maxSize = 900;
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d');
+        if (!context) {
+          reject(new Error('Could not prepare image.'));
+          return;
+        }
+
+        context.fillStyle = '#f7f1e8';
+        context.fillRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.86));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function slugify(value: string) {
