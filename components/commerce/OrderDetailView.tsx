@@ -54,8 +54,13 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
             <p className="flex justify-between text-sm" key={item.product.id}>
               <span>
                 {item.product.name} × {item.quantity}
+                {item.discountPercent > 0 ? (
+                  <span className="ml-1 text-emerald-700">
+                    ({item.discountPercent}% off)
+                  </span>
+                ) : null}
               </span>
-              <span>₹{item.subtotal}</span>
+              <span>₹{item.total ?? item.subtotal}</span>
             </p>
           ))}
         </div>
@@ -77,6 +82,16 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
             <span>Payment</span>
             <span>{order.paymentMethod}</span>
           </p>
+          <p className="mt-2 flex justify-between">
+            <span>Subtotal</span>
+            <span>₹{order.subtotal ?? order.total}</span>
+          </p>
+          {order.discountAmount ? (
+            <p className="mt-2 flex justify-between text-emerald-700">
+              <span>Product discounts</span>
+              <span>-₹{order.discountAmount}</span>
+            </p>
+          ) : null}
           <p className="mt-2 flex justify-between font-bold">
             <span>Total</span>
             <span>₹{order.total}</span>

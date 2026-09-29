@@ -7,6 +7,13 @@ import type { Product } from '@/types/product';
 import { ProductVisual } from '@/components/ProductVisual';
 
 export function ProductCard({ product }: { product: Product }) {
+  const discountPercent = product.discountPercent ?? 0;
+  const discountedPrice = Math.max(
+    0,
+    Math.round(product.price - (product.price * discountPercent) / 100),
+  );
+  const hasDiscount = discountPercent > 0;
+
   return (
     <article className="group overflow-hidden rounded-lg border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
       <Link href={`/products/${product.slug}`} className="block p-3">
@@ -26,10 +33,12 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold">₹{product.price}</span>
-            {product.originalPrice ? (
+            <span className="text-lg font-bold">
+              ₹{hasDiscount ? discountedPrice : product.price}
+            </span>
+            {hasDiscount || product.originalPrice ? (
               <span className="text-sm text-muted-foreground line-through">
-                ₹{product.originalPrice}
+                ₹{product.originalPrice ?? product.price}
               </span>
             ) : null}
           </div>
@@ -44,6 +53,11 @@ export function ProductCard({ product }: { product: Product }) {
             {product.inStock ? 'In stock' : 'Ask shop'}
           </span>
         </div>
+        {hasDiscount ? (
+          <p className="text-xs font-semibold text-emerald-700">
+            {discountPercent}% product discount
+          </p>
+        ) : null}
         <div className="grid gap-2">
           <AddToCartButton product={product} className="h-9 w-full" />
           <a

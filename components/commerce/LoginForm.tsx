@@ -16,12 +16,11 @@ export function LoginForm() {
 
   function submit(event: { preventDefault: () => void }) {
     event.preventDefault();
-    if (mode === 'register') {
-      register(name || 'Customer', email, password);
-    } else {
-      login(email, password);
-    }
-    router.push(email.toLowerCase().includes('admin') ? '/admin' : '/cart');
+    const user =
+      mode === 'register'
+        ? register(name || 'Customer', email, password)
+        : login(email, password);
+    router.push(user.role === 'admin' ? '/admin' : '/cart');
   }
 
   return (

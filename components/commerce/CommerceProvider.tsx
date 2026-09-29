@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { products } from '@/data/products';
+import { categories } from '@/data/categories';
 import type {
   Address,
   CartLine,
@@ -18,7 +19,7 @@ import type {
   OrderStatus,
   PaymentMethod,
 } from '@/types/commerce';
-import type { Product } from '@/types/product';
+import type { Category, Product } from '@/types/product';
 
 type CheckoutInput = {
   address: Omit<Address, 'id'>;
@@ -30,10 +31,20 @@ type CommerceContextValue = {
   cart: CartLine[];
   orders: Order[];
   products: Product[];
+  categories: Category[];
   productsById: Map<string, Product>;
-  cartItems: Array<{ product: Product; quantity: number; subtotal: number }>;
+  cartItems: Array<{
+    product: Product;
+    quantity: number;
+    subtotal: number;
+    discountPercent: number;
+    discountAmount: number;
+    total: number;
+  }>;
   cartCount: number;
   cartTotal: number;
+  cartDiscountAmount: number;
+  cartGrandTotal: number;
   login: (email: string, password: string) => CommerceUser;
   register: (name: string, email: string, password: string) => CommerceUser;
   logout: () => void;
@@ -47,6 +58,7 @@ type CommerceContextValue = {
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
   updateProductStock: (productId: string, stockQuantity: number) => void;
+  createCategory: (category: Category) => void;
 };
 
 const storageKey = 'bpb-commerce-v1';
@@ -57,6 +69,7 @@ type StoredState = {
   cart: CartLine[];
   orders: Order[];
   products: Product[];
+  categories: Category[];
 };
 
 const initialState: StoredState = {
@@ -67,6 +80,7 @@ const initialState: StoredState = {
     ...product,
     stockQuantity: product.stockQuantity ?? (product.inStock ? 20 : 0),
   })),
+  categories,
 };
 
 export function CommerceProvider({ children }: { children: ReactNode }) {
@@ -90,6 +104,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
             products: parsed.products?.length
               ? parsed.products
               : initialState.products,
+            categories: parsed.categories?.length
+              ? parsed.categories
+              : initialState.categories,
           });
         } catch {
           setState(initialState);
@@ -111,21 +128,40 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         .map((line) => {
           const product = productsById.get(line.productId);
           if (!product) return null;
+          const subtotal = product.price * line.quantity;
+          const discountPercent = normalizeDiscountPercent(
+            product.discountPercent,
+          );
+          const discountAmount = calculateDiscountAmount(
+            subtotal,
+            discountPercent,
+          );
           return {
             product,
             quantity: line.quantity,
-            subtotal: product.price * line.quantity,
+            subtotal,
+            discountPercent,
+            discountAmount,
+            total: Math.max(0, subtotal - discountAmount),
           };
         })
         .filter(Boolean) as Array<{
         product: Product;
         quantity: number;
         subtotal: number;
+        discountPercent: number;
+        discountAmount: number;
+        total: number;
       }>,
     [productsById, state.cart],
   );
 
   const cartTotal = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const cartDiscountAmount = cartItems.reduce(
+    (sum, item) => sum + item.discountAmount,
+    0,
+  );
+  const cartGrandTotal = cartItems.reduce((sum, item) => sum + item.total, 0);
   const cartCount = state.cart.reduce((sum, line) => sum + line.quantity, 0);
 
   function upsertUser(name: string, email: string, role: CommerceUser['role']) {
@@ -144,10 +180,13 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     cart: state.cart,
     orders: state.orders,
     products: state.products,
+    categories: state.categories,
     productsById,
     cartItems,
     cartCount,
     cartTotal,
+    cartDiscountAmount,
+    cartGrandTotal,
     login(email) {
       const role = email.toLowerCase().includes('admin') ? 'admin' : 'customer';
       return upsertUser(role === 'admin' ? 'Shop Admin' : 'Customer', email, role);
@@ -194,8 +233,12 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     },
     placeOrder(input) {
       const user =
-        state.user ??
-        upsertUser('Guest Customer', 'guest@bpb.local', 'customer');
+        state.user ?? {
+          id: 'guest',
+          name: 'Guest Customer',
+          email: 'guest@bpb.local',
+          role: 'customer',
+        };
       const address = { ...input.address, id: `addr-${Date.now()}` };
       const order: Order = {
         id: `BPB-${Date.now().toString().slice(-8)}`,
@@ -205,7 +248,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         paymentMethod: input.paymentMethod,
         paymentStatus: input.paymentMethod === 'COD' ? 'PENDING' : 'PAID',
         status: 'PENDING',
-        total: cartTotal,
+        subtotal: cartTotal,
+        discountAmount: cartDiscountAmount,
+        total: cartGrandTotal,
         createdAt: new Date().toISOString(),
       };
 
@@ -288,7 +333,16 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
                 inStock: nextStock > 0,
               }
             : product,
-        ),
+          ),
+      }));
+    },
+    createCategory(category) {
+      setState((current) => ({
+        ...current,
+        categories: [
+          category,
+          ...current.categories.filter((item) => item.slug !== category.slug),
+        ],
       }));
     },
   };
@@ -298,6 +352,14 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       {children}
     </CommerceContext.Provider>
   );
+}
+
+function normalizeDiscountPercent(value: number | undefined) {
+  return Math.max(0, Math.min(100, Number(value) || 0));
+}
+
+function calculateDiscountAmount(subtotal: number, discountPercent: number) {
+  return Math.round((subtotal * discountPercent) / 100);
 }
 
 export function useCommerce() {

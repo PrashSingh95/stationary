@@ -43,6 +43,12 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   const category = await getCategory(product.category);
+  const discountPercent = product.discountPercent ?? 0;
+  const discountedPrice = Math.max(
+    0,
+    Math.round(product.price - (product.price * discountPercent) / 100),
+  );
+  const hasDiscount = discountPercent > 0;
 
   return (
     <SiteShell>
@@ -85,11 +91,18 @@ export default async function ProductDetailPage({
               {product.description}
             </p>
 
-            <div className="mt-6 flex items-end gap-3">
-              <span className="text-4xl font-black">₹{product.price}</span>
-              {product.originalPrice ? (
+            <div className="mt-6 flex flex-wrap items-end gap-3">
+              <span className="text-4xl font-black">
+                ₹{hasDiscount ? discountedPrice : product.price}
+              </span>
+              {hasDiscount || product.originalPrice ? (
                 <span className="pb-1 text-lg text-muted-foreground line-through">
-                  ₹{product.originalPrice}
+                  ₹{product.originalPrice ?? product.price}
+                </span>
+              ) : null}
+              {hasDiscount ? (
+                <span className="mb-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
+                  {discountPercent}% off
                 </span>
               ) : null}
             </div>

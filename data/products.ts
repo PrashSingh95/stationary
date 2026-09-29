@@ -201,8 +201,16 @@ export function getProductsByCategory(category: string) {
 }
 
 export function makeWhatsAppUrl(product?: Product) {
+  const discountPercent = product?.discountPercent ?? 0;
+  const price =
+    product && discountPercent > 0
+      ? Math.max(
+          0,
+          Math.round(product.price - (product.price * discountPercent) / 100),
+        )
+      : product?.price;
   const message = product
-    ? `Hi,\n\nI would like to order:\n\n${product.name}\nQuantity: 1\nPrice: Rs. ${product.price}`
+    ? `Hi,\n\nI would like to order:\n\n${product.name}\nQuantity: 1\nPrice: Rs. ${price}${discountPercent > 0 ? ` (${discountPercent}% discount)` : ''}`
     : 'Hi, I would like to ask about stationery products.';
 
   return `https://wa.me/${shop.phone}?text=${encodeURIComponent(message)}`;

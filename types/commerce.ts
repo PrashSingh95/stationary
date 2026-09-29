@@ -37,6 +37,9 @@ export type OrderLine = {
   product: Product;
   quantity: number;
   subtotal: number;
+  discountPercent: number;
+  discountAmount: number;
+  total: number;
 };
 
 export type Order = {
@@ -47,6 +50,8 @@ export type Order = {
   paymentMethod: PaymentMethod;
   paymentStatus: 'PENDING' | 'PAID';
   status: OrderStatus;
+  subtotal: number;
+  discountAmount: number;
   total: number;
   createdAt: string;
 };

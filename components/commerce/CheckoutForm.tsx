@@ -9,7 +9,13 @@ import type { PaymentMethod } from '@/types/commerce';
 
 export function CheckoutForm() {
   const router = useRouter();
-  const { cartItems, cartTotal, placeOrder } = useCommerce();
+  const {
+    cartDiscountAmount,
+    cartGrandTotal,
+    cartItems,
+    cartTotal,
+    placeOrder,
+  } = useCommerce();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
   const [form, setForm] = useState({
     recipientName: '',
@@ -108,13 +114,28 @@ export function CheckoutForm() {
             <p className="flex justify-between gap-3 text-sm" key={item.product.id}>
               <span>
                 {item.product.name} × {item.quantity}
+                {item.discountPercent > 0 ? (
+                  <span className="ml-1 text-emerald-700">
+                    ({item.discountPercent}% off)
+                  </span>
+                ) : null}
               </span>
-              <span>₹{item.subtotal}</span>
+              <span>₹{item.total}</span>
             </p>
           ))}
-          <p className="flex justify-between border-t border-border pt-3 font-bold">
-            <span>Total</span>
+          <p className="flex justify-between border-t border-border pt-3 text-sm">
+            <span>Subtotal</span>
             <span>₹{cartTotal}</span>
+          </p>
+          {cartDiscountAmount > 0 ? (
+            <p className="flex justify-between text-sm text-emerald-700">
+              <span>Product discounts</span>
+              <span>-₹{cartDiscountAmount}</span>
+            </p>
+          ) : null}
+          <p className="flex justify-between font-bold">
+            <span>Total</span>
+            <span>₹{cartGrandTotal}</span>
           </p>
         </div>
         <button className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 font-semibold text-white hover:bg-teal-800">

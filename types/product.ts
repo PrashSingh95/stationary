@@ -7,6 +7,7 @@ export type Product = {
   brand: string;
   price: number;
   originalPrice?: number;
+  discountPercent?: number;
   images: string[];
   inStock: boolean;
   featured: boolean;

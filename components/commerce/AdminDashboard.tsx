@@ -1,6 +1,7 @@
 'use client';
 
 import { type ChangeEvent, useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
   Boxes,
   IndianRupee,
@@ -13,11 +14,10 @@ import {
 } from 'lucide-react';
 
 import { ProductVisual } from '@/components/ProductVisual';
-import { categories } from '@/data/categories';
 import { useCommerce } from '@/components/commerce/CommerceProvider';
 import { productImageMap } from '@/lib/product-images';
 import type { OrderStatus } from '@/types/commerce';
-import type { Product } from '@/types/product';
+import type { Category, Product } from '@/types/product';
 
 const statuses: OrderStatus[] = [
   'PENDING',
@@ -37,11 +37,18 @@ type ProductForm = {
   brand: string;
   price: string;
   originalPrice: string;
+  discountPercent: string;
   image: string;
   specs: string;
   stockQuantity: string;
   featured: boolean;
   popular: boolean;
+};
+
+type CategoryForm = {
+  name: string;
+  slug: string;
+  description: string;
 };
 
 const emptyForm: ProductForm = {
@@ -53,6 +60,7 @@ const emptyForm: ProductForm = {
   brand: '',
   price: '',
   originalPrice: '',
+  discountPercent: '',
   image: 'notebook',
   specs: '',
   stockQuantity: '10',
@@ -60,17 +68,29 @@ const emptyForm: ProductForm = {
   popular: false,
 };
 
+const emptyCategoryForm: CategoryForm = {
+  name: '',
+  slug: '',
+  description: '',
+};
+
 export function AdminDashboard() {
   const {
+    user,
     orders,
     products,
+    categories,
     updateOrderStatus,
     createProduct,
     updateProduct,
     deleteProduct,
     updateProductStock,
+    createCategory,
   } = useCommerce();
   const [form, setForm] = useState<ProductForm>(emptyForm);
+  const [categoryForm, setCategoryForm] = useState<CategoryForm>(
+    emptyCategoryForm,
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [imageError, setImageError] = useState('');
 
@@ -87,12 +107,57 @@ export function AdminDashboard() {
     count: products.filter((product) => product.category === category.slug).length,
   }));
 
+  if (!user) {
+    return (
+      <div className="rounded-lg border border-dashed border-border bg-card p-8 text-center">
+        <h2 className="text-xl font-bold">Admin login required</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          For this demo, sign in with any email that contains “admin”.
+        </p>
+        <Link
+          className="mt-5 inline-flex h-10 items-center justify-center rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
+          href="/login"
+        >
+          Login as admin
+        </Link>
+      </div>
+    );
+  }
+
+  if (user.role !== 'admin') {
+    return (
+      <div className="rounded-lg border border-dashed border-border bg-card p-8 text-center">
+        <h2 className="text-xl font-bold">Admin access required</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Your account is signed in as a customer. Log in again with an email
+          containing “admin”.
+        </p>
+        <Link
+          className="mt-5 inline-flex h-10 items-center justify-center rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
+          href="/login"
+        >
+          Switch account
+        </Link>
+      </div>
+    );
+  }
+
   function updateForm(field: keyof ProductForm, value: string | boolean) {
     if (field === 'image') setImageError('');
     setForm((current) => {
       const next = { ...current, [field]: value };
       if (field === 'name' && !editingId) {
         next.slug = slugify(String(value));
+      }
+      return next;
+    });
+  }
+
+  function updateCategoryForm(field: keyof CategoryForm, value: string) {
+    setCategoryForm((current) => {
+      const next = { ...current, [field]: value };
+      if (field === 'name') {
+        next.slug = slugify(value);
       }
       return next;
     });
@@ -110,6 +175,9 @@ export function AdminDashboard() {
       brand: product.brand,
       price: String(product.price),
       originalPrice: product.originalPrice ? String(product.originalPrice) : '',
+      discountPercent: product.discountPercent
+        ? String(product.discountPercent)
+        : '',
       image: product.images[0] ?? 'notebook',
       specs: product.specs.join(', '),
       stockQuantity: String(product.stockQuantity ?? (product.inStock ? 20 : 0)),
@@ -129,6 +197,12 @@ export function AdminDashboard() {
     setEditingId(null);
     setImageError('');
     setForm(emptyForm);
+  }
+
+  function submitCategory(event: { preventDefault: () => void }) {
+    event.preventDefault();
+    createCategory(formToCategory(categoryForm));
+    setCategoryForm(emptyCategoryForm);
   }
 
   async function uploadProductImage(event: ChangeEvent<HTMLInputElement>) {
@@ -169,32 +243,32 @@ export function AdminDashboard() {
         ))}
       </div>
 
-      <section className="rounded-lg border border-border bg-card p-5 shadow-sm">
-        <h2 className="text-lg font-bold">Orders</h2>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="border-b border-border text-muted-foreground">
-              <tr>
-                <th className="py-3">Order</th>
-                <th>Customer</th>
-                <th>Amount</th>
-                <th>Payment</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.length === 0 ? (
+      {orders.length > 0 ? (
+        <section className="rounded-lg border border-border bg-card p-5 shadow-sm">
+          <h2 className="text-lg font-bold">Orders</h2>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="border-b border-border text-muted-foreground">
                 <tr>
-                  <td className="py-5 text-muted-foreground" colSpan={5}>
-                    No orders yet. Place a checkout order to see it here.
-                  </td>
+                  <th className="py-3">Order</th>
+                  <th>Customer</th>
+                  <th>Amount</th>
+                  <th>Discount</th>
+                  <th>Payment</th>
+                  <th>Status</th>
                 </tr>
-              ) : (
-                orders.map((order) => (
+              </thead>
+              <tbody>
+                {orders.map((order) => (
                   <tr className="border-b border-border" key={order.id}>
                     <td className="py-3 font-semibold">{order.id}</td>
                     <td>{order.user.email}</td>
                     <td>₹{order.total}</td>
+                    <td>
+                      {order.discountAmount
+                        ? `-₹${order.discountAmount}`
+                        : 'None'}
+                    </td>
                     <td>{order.paymentMethod}</td>
                     <td>
                       <select
@@ -215,12 +289,12 @@ export function AdminDashboard() {
                       </select>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[390px_1fr]">
         <form
@@ -273,25 +347,34 @@ export function AdminDashboard() {
                 value={form.price}
               />
               <AdminInput
+                label="Original price"
+                onChange={(value) => updateForm('originalPrice', value)}
+                type="number"
+                value={form.originalPrice}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <AdminInput
                 label="Stock"
                 onChange={(value) => updateForm('stockQuantity', value)}
                 required
                 type="number"
                 value={form.stockQuantity}
               />
+              <AdminInput
+                label="Discount %"
+                onChange={(value) => updateForm('discountPercent', value)}
+                type="number"
+                value={form.discountPercent}
+              />
             </div>
-            <AdminInput
-              label="Original price"
-              onChange={(value) => updateForm('originalPrice', value)}
-              type="number"
-              value={form.originalPrice}
-            />
-            <div className="grid gap-3 rounded-lg border border-border p-3">
-              <div className="grid gap-3 sm:grid-cols-[110px_1fr]">
+            <div className="grid gap-4 rounded-lg border border-border p-4">
+              <p className="text-sm font-semibold">Product image</p>
+              <div className="grid gap-4 sm:grid-cols-[110px_1fr]">
                 <ProductVisual label={form.name || 'Product image'} type={form.image} />
-                <div className="grid gap-2">
+                <div className="grid gap-4">
                   <label>
-                    <span className="text-sm font-medium">Product image</span>
+                    <span className="text-sm font-medium">Upload image</span>
                     <input
                       accept="image/*"
                       className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
@@ -299,10 +382,13 @@ export function AdminDashboard() {
                       type="file"
                     />
                   </label>
+                  <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground">
+                    <span className="h-px flex-1 bg-border" />
+                    OR
+                    <span className="h-px flex-1 bg-border" />
+                  </div>
                   <label>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      Or choose preset
-                    </span>
+                    <span className="text-sm font-medium">Choose preset</span>
                     <select
                       className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
                       onChange={(event) => updateForm('image', event.target.value)}
@@ -345,27 +431,17 @@ export function AdminDashboard() {
               placeholder="Comma separated"
               value={form.specs}
             />
-            <div className="grid gap-2 text-sm">
-              <label className="flex items-center gap-2">
-                <input
-                  checked={form.featured}
-                  onChange={(event) =>
-                    updateForm('featured', event.target.checked)
-                  }
-                  type="checkbox"
-                />
-                Featured
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  checked={form.popular}
-                  onChange={(event) =>
-                    updateForm('popular', event.target.checked)
-                  }
-                  type="checkbox"
-                />
-                Popular
-              </label>
+            <div className="grid gap-2 text-sm sm:grid-cols-2">
+              <AdminCheckbox
+                checked={form.featured}
+                label="Featured"
+                onChange={(checked) => updateForm('featured', checked)}
+              />
+              <AdminCheckbox
+                checked={form.popular}
+                label="Popular"
+                onChange={(checked) => updateForm('popular', checked)}
+              />
             </div>
           </div>
           <div className="mt-5 flex gap-2">
@@ -398,6 +474,7 @@ export function AdminDashboard() {
                   <th className="py-3">Product</th>
                   <th>Category</th>
                   <th>Price</th>
+                  <th>Discount</th>
                   <th>Stock</th>
                   <th>Status</th>
                   <th className="text-right">Actions</th>
@@ -423,8 +500,9 @@ export function AdminDashboard() {
                           </div>
                         </div>
                       </td>
-                      <td>{categoryName(product.category)}</td>
+                      <td>{categoryName(categories, product.category)}</td>
                       <td>₹{product.price}</td>
+                      <td>{product.discountPercent ? `${product.discountPercent}%` : 'None'}</td>
                       <td>
                         <input
                           aria-label={`Stock quantity for ${product.name}`}
@@ -480,14 +558,70 @@ export function AdminDashboard() {
         </section>
       </section>
 
+      {orders.length === 0 ? (
+        <section
+          aria-labelledby="orders-empty-heading"
+          className="rounded-lg border border-dashed border-border bg-card p-4 shadow-sm"
+        >
+          <h2 className="text-base font-bold" id="orders-empty-heading">
+            Orders
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            No orders yet. Product and inventory tools are shown first until
+            customer orders arrive.
+          </p>
+        </section>
+      ) : null}
+
       <section className="rounded-lg border border-border bg-card p-5 shadow-sm">
-        <h2 className="text-lg font-bold">Categories</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 lg:grid-cols-[340px_1fr]">
+          <form
+            className="rounded-lg border border-border p-4"
+            onSubmit={submitCategory}
+          >
+            <h2 className="flex items-center gap-2 text-lg font-bold">
+              <Plus className="size-5" />
+              Create category
+            </h2>
+            <div className="mt-4 grid gap-3">
+              <AdminInput
+                label="Name"
+                onChange={(value) => updateCategoryForm('name', value)}
+                required
+                value={categoryForm.name}
+              />
+              <AdminInput
+                label="Slug"
+                onChange={(value) =>
+                  updateCategoryForm('slug', slugify(value))
+                }
+                required
+                value={categoryForm.slug}
+              />
+              <label>
+                <span className="text-sm font-medium">Description</span>
+                <textarea
+                  className="mt-1 min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  onChange={(event) =>
+                    updateCategoryForm('description', event.target.value)
+                  }
+                  required
+                  value={categoryForm.description}
+                />
+              </label>
+            </div>
+            <button className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800">
+              <Save className="size-4" />
+              Create category
+            </button>
+          </form>
+
+          <div>
+            <h2 className="text-lg font-bold">Categories</h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {categoryCounts.map((category) => (
             <div className="rounded-lg border border-border p-4" key={category.slug}>
-              <span
-                className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${category.color}`}
-              >
+              <span className="inline-flex rounded-full bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
                 {category.count} products
               </span>
               <p className="mt-3 font-semibold">{category.name}</p>
@@ -496,6 +630,8 @@ export function AdminDashboard() {
               </p>
             </div>
           ))}
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -532,10 +668,49 @@ function AdminInput({
   );
 }
 
+function AdminCheckbox({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean;
+  label: string;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2 transition hover:bg-muted">
+      <input
+        checked={checked}
+        className="peer sr-only"
+        onChange={(event) => onChange(event.target.checked)}
+        type="checkbox"
+      />
+      <span
+        aria-hidden="true"
+        className="grid size-5 place-items-center rounded border border-input bg-background text-transparent transition peer-checked:border-teal-700 peer-checked:bg-teal-700 peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-teal-700"
+      >
+        <svg
+          className="size-3"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="3"
+          viewBox="0 0 24 24"
+        >
+          <path d="m5 12 4 4L19 6" />
+        </svg>
+      </span>
+      <span className="text-sm font-medium">{label}</span>
+    </label>
+  );
+}
+
 function formToProduct(form: ProductForm, editingId: string | null): Product {
   const stockQuantity = Math.max(0, Number(form.stockQuantity) || 0);
   const price = Math.max(0, Number(form.price) || 0);
   const originalPrice = Number(form.originalPrice) || undefined;
+  const discountPercent = normalizePercent(Number(form.discountPercent) || 0);
   const slug = slugify(form.slug || form.name);
 
   return {
@@ -547,6 +722,7 @@ function formToProduct(form: ProductForm, editingId: string | null): Product {
     brand: form.brand.trim(),
     price,
     originalPrice,
+    discountPercent,
     images: [form.image.trim() || 'notebook'],
     inStock: stockQuantity > 0,
     featured: form.featured,
@@ -556,6 +732,21 @@ function formToProduct(form: ProductForm, editingId: string | null): Product {
       .map((spec) => spec.trim())
       .filter(Boolean),
     stockQuantity,
+  };
+}
+
+function normalizePercent(value: number) {
+  return Math.max(0, Math.min(100, value));
+}
+
+function formToCategory(form: CategoryForm): Category {
+  const slug = slugify(form.slug || form.name);
+
+  return {
+    name: form.name.trim(),
+    slug,
+    description: form.description.trim(),
+    color: 'bg-muted text-muted-foreground',
   };
 }
 
@@ -604,6 +795,6 @@ function slugify(value: string) {
     .replace(/^-|-$/g, '');
 }
 
-function categoryName(slug: string) {
+function categoryName(categories: Category[], slug: string) {
   return categories.find((category) => category.slug === slug)?.name ?? slug;
 }
