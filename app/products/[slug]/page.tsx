@@ -6,7 +6,8 @@ import { ArrowLeft, MessageCircle, PackageCheck, Star } from 'lucide-react';
 import { AddToCartButton } from '@/components/commerce/AddToCartButton';
 import { ProductVisual } from '@/components/ProductVisual';
 import { SiteShell } from '@/components/SiteShell';
-import { makeWhatsAppUrl, products } from '@/data/products';
+import { products } from '@/data/products';
+import { makeWhatsAppUrl } from '@/data/shop';
 import { getCategory, getProduct } from '@/lib/api/products';
 
 export function generateStaticParams() {

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { MapPin, MessageCircle, Phone, Timer } from 'lucide-react';
 
-import { shop } from '@/data/products';
+import { shop } from '@/data/shop';
 
 export function Footer() {
   return (

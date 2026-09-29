@@ -13,7 +13,7 @@ import { CategoryCard } from '@/components/CategoryCard';
 import { ProductCard } from '@/components/ProductCard';
 import { SectionHeader } from '@/components/SectionHeader';
 import { SiteShell } from '@/components/SiteShell';
-import { makeWhatsAppUrl, shop } from '@/data/products';
+import { makeWhatsAppUrl, shop } from '@/data/shop';
 import { listCategories, listProducts } from '@/lib/api/products';
 
 export default async function Home() {

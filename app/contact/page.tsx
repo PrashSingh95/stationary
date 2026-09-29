@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Clock, MapPin, MessageCircle, Phone } from 'lucide-react';
 
 import { SiteShell } from '@/components/SiteShell';
-import { makeWhatsAppUrl, shop } from '@/data/products';
+import { makeWhatsAppUrl, shop } from '@/data/shop';
 
 export const metadata: Metadata = {
   title: 'Contact',

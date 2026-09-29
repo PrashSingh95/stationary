@@ -184,34 +184,10 @@ export const products: Product[] = [
   },
 ];
 
-export const shop = {
-  name: 'BABA PUSTAK BHANDAR',
-  phone: '919876543210',
-  displayPhone: '+91 98765 43210',
-  address: 'MG Road, Near City School, Pune',
-  hours: 'Mon-Sat, 9:00 AM-8:30 PM',
-};
-
 export function getProduct(slug: string) {
   return products.find((product) => product.slug === slug);
 }
 
 export function getProductsByCategory(category: string) {
   return products.filter((product) => product.category === category);
-}
-
-export function makeWhatsAppUrl(product?: Product) {
-  const discountPercent = product?.discountPercent ?? 0;
-  const price =
-    product && discountPercent > 0
-      ? Math.max(
-          0,
-          Math.round(product.price - (product.price * discountPercent) / 100),
-        )
-      : product?.price;
-  const message = product
-    ? `Hi,\n\nI would like to order:\n\n${product.name}\nQuantity: 1\nPrice: Rs. ${price}${discountPercent > 0 ? ` (${discountPercent}% discount)` : ''}`
-    : 'Hi, I would like to ask about stationery products.';
-
-  return `https://wa.me/${shop.phone}?text=${encodeURIComponent(message)}`;
 }

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { MessageCircle, PackageCheck } from 'lucide-react';
 
 import { AddToCartButton } from '@/components/commerce/AddToCartButton';
-import { makeWhatsAppUrl } from '@/data/products';
+import { makeWhatsAppUrl } from '@/data/shop';
 import type { Product } from '@/types/product';
 import { ProductVisual } from '@/components/ProductVisual';
 
