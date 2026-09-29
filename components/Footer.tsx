@@ -47,7 +47,7 @@ export function Footer() {
             {shop.displayPhone}
           </p>
           <a
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-orange-600 px-4 font-bold text-white transition hover:bg-orange-700"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 font-bold text-white transition hover:bg-emerald-700"
             href={`https://wa.me/${shop.phone}`}
             target="_blank"
             rel="noreferrer"

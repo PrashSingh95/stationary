@@ -116,7 +116,7 @@ export function ShopFilters({
             Try a different search term or browse all categories.
           </p>
           <Link
-            className="mt-5 inline-flex rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white"
+            className="mt-5 inline-flex rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700"
             href="/contact"
           >
             Ask on WhatsApp

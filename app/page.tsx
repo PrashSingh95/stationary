@@ -51,7 +51,7 @@ export default async function Home() {
                   <ArrowRight className="size-4 transition group-hover:translate-x-1" />
                 </Link>
                 <a
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-orange-600 px-5 font-bold text-white shadow-lg shadow-orange-900/15 transition hover:bg-orange-700"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 font-bold text-white shadow-lg shadow-emerald-900/15 transition hover:bg-emerald-700"
                   href={makeWhatsAppUrl()}
                   target="_blank"
                   rel="noreferrer"
@@ -227,7 +227,7 @@ export default async function Home() {
               </dl>
             </div>
             <div className="rounded-lg border border-orange-200 bg-orange-50 p-6 shadow-sm shadow-orange-950/5">
-              <MessageCircle className="size-8 text-orange-700" />
+              <MessageCircle className="size-8 text-emerald-700" />
               <h2 className="mt-4 text-2xl font-black text-emerald-950">
                 Need something specific?
               </h2>
@@ -236,7 +236,7 @@ export default async function Home() {
                 WhatsApp and the shop can confirm price and availability.
               </p>
               <a
-                className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-orange-600 px-5 font-bold text-white transition hover:bg-orange-700"
+                className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-emerald-600 px-5 font-bold text-white transition hover:bg-emerald-700"
                 href={makeWhatsAppUrl()}
                 target="_blank"
                 rel="noreferrer"

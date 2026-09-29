@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { ShoppingCart, UserRound } from 'lucide-react';
 
 import { useCommerce } from '@/components/commerce/CommerceProvider';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function CartNavButton() {
   const { cartCount, user } = useCommerce();
@@ -12,7 +14,10 @@ export function CartNavButton() {
     <>
       <Link
         aria-label="Open cart"
-        className="relative grid size-10 place-items-center rounded-lg border border-emerald-900/10 bg-white transition hover:border-emerald-300 hover:bg-emerald-50"
+        className={cn(
+          buttonVariants({ variant: 'outline', size: 'icon-lg' }),
+          'relative size-10 border-emerald-900/10 bg-white hover:border-emerald-300 hover:bg-emerald-50',
+        )}
         href="/cart"
       >
         <ShoppingCart className="size-4" />
@@ -24,7 +29,10 @@ export function CartNavButton() {
       </Link>
       <Link
         aria-label={user ? 'Open account' : 'Login'}
-        className="grid size-10 place-items-center rounded-lg border border-emerald-900/10 bg-white transition hover:border-emerald-300 hover:bg-emerald-50"
+        className={cn(
+          buttonVariants({ variant: 'outline', size: 'icon-lg' }),
+          'size-10 border-emerald-900/10 bg-white hover:border-emerald-300 hover:bg-emerald-50',
+        )}
         href={user ? '/orders' : '/login'}
       >
         <UserRound className="size-4" />

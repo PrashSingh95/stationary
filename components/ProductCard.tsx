@@ -61,7 +61,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="grid gap-2">
           <AddToCartButton product={product} className="h-10 w-full" />
           <a
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-emerald-900/10 bg-white px-3 text-sm font-bold transition hover:border-emerald-300 hover:bg-emerald-50"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-bold text-white shadow-sm shadow-emerald-900/10 transition hover:bg-emerald-700"
             href={makeWhatsAppUrl(product)}
             target="_blank"
             rel="noreferrer"

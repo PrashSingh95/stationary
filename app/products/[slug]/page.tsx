@@ -133,7 +133,7 @@ export default async function ProductDetailPage({
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <AddToCartButton product={product} className="h-12" />
               <a
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-border px-5 font-semibold transition hover:border-teal-300"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 font-bold text-white shadow-sm shadow-emerald-900/10 transition hover:bg-emerald-700"
                 href={makeWhatsAppUrl(product)}
                 target="_blank"
                 rel="noreferrer"

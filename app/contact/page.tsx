@@ -42,8 +42,8 @@ export default function ContactPage() {
           ))}
         </section>
 
-        <section className="mt-8 rounded-lg border border-teal-200 bg-teal-50 p-6 text-center md:p-10">
-          <MessageCircle className="mx-auto size-10 text-teal-700" />
+        <section className="mt-8 rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-center md:p-10">
+          <MessageCircle className="mx-auto size-10 text-emerald-700" />
           <h2 className="mt-4 text-2xl font-bold">
             Order or enquire through WhatsApp
           </h2>
@@ -52,7 +52,7 @@ export default function ContactPage() {
             can also use the general contact button for custom requests.
           </p>
           <a
-            className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-teal-700 px-6 font-semibold text-white transition hover:bg-teal-800"
+            className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 font-bold text-white transition hover:bg-emerald-700"
             href={makeWhatsAppUrl()}
             target="_blank"
             rel="noreferrer"
