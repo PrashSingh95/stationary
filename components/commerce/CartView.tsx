@@ -7,7 +7,14 @@ import { ProductVisual } from '@/components/ProductVisual';
 import { useCommerce } from '@/components/commerce/CommerceProvider';
 
 export function CartView() {
-  const { cartItems, cartTotal, updateQuantity, removeFromCart } = useCommerce();
+  const {
+    cartDiscountAmount,
+    cartGrandTotal,
+    cartItems,
+    cartTotal,
+    removeFromCart,
+    updateQuantity,
+  } = useCommerce();
 
   if (cartItems.length === 0) {
     return (
@@ -74,7 +81,19 @@ export function CartView() {
                   <Plus className="size-4" />
                 </button>
               </div>
-              <p className="text-lg font-bold">₹{item.subtotal}</p>
+              <div className="text-right">
+                {item.discountPercent > 0 ? (
+                  <p className="text-xs font-semibold text-emerald-700">
+                    {item.discountPercent}% off
+                  </p>
+                ) : null}
+                <p className="text-lg font-bold">₹{item.total}</p>
+                {item.discountAmount > 0 ? (
+                  <p className="text-xs text-muted-foreground line-through">
+                    ₹{item.subtotal}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </article>
         ))}
@@ -86,13 +105,19 @@ export function CartView() {
             <span>Subtotal</span>
             <span>₹{cartTotal}</span>
           </p>
+          {cartDiscountAmount > 0 ? (
+            <p className="flex justify-between text-emerald-700">
+              <span>Product discounts</span>
+              <span>-₹{cartDiscountAmount}</span>
+            </p>
+          ) : null}
           <p className="flex justify-between">
             <span>Delivery</span>
             <span>Shop confirmation</span>
           </p>
           <p className="flex justify-between border-t border-border pt-3 text-base font-bold">
             <span>Total</span>
-            <span>₹{cartTotal}</span>
+            <span>₹{cartGrandTotal}</span>
           </p>
         </div>
         <Link

@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, SlidersHorizontal } from 'lucide-react';
 
-import { categories } from '@/data/categories';
 import type { Product } from '@/types/product';
 import { ProductCard } from '@/components/ProductCard';
 import { useCommerce } from '@/components/commerce/CommerceProvider';
@@ -21,7 +20,7 @@ export function ShopFilters({
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(initialCategory);
   const [sort, setSort] = useState<SortMode>('popular');
-  const { products: managedProducts } = useCommerce();
+  const { categories, products: managedProducts } = useCommerce();
   const displayProducts = managedProducts.length ? managedProducts : products;
 
   const visibleProducts = useMemo(() => {
