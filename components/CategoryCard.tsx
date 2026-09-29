@@ -28,15 +28,17 @@ export function CategoryCard({ category }: { category: Category }) {
 
   return (
     <Link
-      className="group rounded-lg border border-border bg-card p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-teal-300 hover:shadow-xl"
+      className="group rounded-lg border border-emerald-900/10 bg-card p-5 shadow-sm shadow-emerald-950/5 transition duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-950/10"
       href={`/category/${category.slug}`}
     >
       <span
-        className={`mb-5 inline-grid size-12 place-items-center rounded-lg ${category.color}`}
+        className={`mb-5 inline-grid size-12 place-items-center rounded-lg shadow-inner ${category.color}`}
       >
         <Icon className="size-5" />
       </span>
-      <h3 className="text-base font-semibold">{category.name}</h3>
+      <h3 className="text-base font-bold text-emerald-950 transition group-hover:text-emerald-700">
+        {category.name}
+      </h3>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
         {category.description}
       </p>

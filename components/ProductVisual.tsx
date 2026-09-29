@@ -41,9 +41,9 @@ export function ProductVisual({
     return (
       <div
         aria-label={label}
-        className={`relative overflow-hidden rounded-lg border border-border bg-[#f7f1e8] ${
+        className={`relative overflow-hidden rounded-lg border border-emerald-900/10 bg-[#f7f1e8] ${
           large ? 'min-h-[360px]' : 'aspect-[4/3]'
-        } shadow-inner`}
+        } shadow-inner shadow-emerald-950/10`}
       >
         <Image
           alt={label}
@@ -66,7 +66,7 @@ export function ProductVisual({
       aria-label={label}
       className={`relative grid overflow-hidden rounded-lg bg-gradient-to-br ${palette} ${
         large ? 'min-h-[360px]' : 'aspect-[4/3]'
-      } place-items-center border border-white/70 shadow-inner`}
+      } place-items-center border border-white/70 shadow-inner shadow-emerald-950/10`}
     >
       <div className="absolute left-4 top-4 h-14 w-14 rounded-full bg-white/55 blur-sm" />
       <div className="absolute bottom-5 right-5 h-24 w-24 rounded-full bg-white/45 blur-md" />

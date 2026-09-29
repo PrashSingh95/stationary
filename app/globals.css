@@ -53,24 +53,24 @@ body {
 }
 
 :root {
-  --background: oklch(0.985 0.006 160);
-  --foreground: oklch(0.18 0.02 215);
+  --background: oklch(0.985 0.018 159);
+  --foreground: oklch(0.18 0.055 169);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 215);
+  --card-foreground: oklch(0.18 0.055 169);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 215);
-  --primary: oklch(0.44 0.09 180);
+  --popover-foreground: oklch(0.18 0.055 169);
+  --primary: oklch(0.6 0.14 164);
   --primary-foreground: oklch(0.99 0.01 160);
-  --secondary: oklch(0.96 0.03 172);
-  --secondary-foreground: oklch(0.22 0.04 190);
-  --muted: oklch(0.95 0.012 185);
-  --muted-foreground: oklch(0.47 0.018 225);
-  --accent: oklch(0.93 0.06 80);
-  --accent-foreground: oklch(0.23 0.04 70);
+  --secondary: oklch(0.94 0.055 160);
+  --secondary-foreground: oklch(0.24 0.08 166);
+  --muted: oklch(0.95 0.018 186);
+  --muted-foreground: oklch(0.43 0.028 225);
+  --accent: oklch(0.69 0.18 48);
+  --accent-foreground: oklch(0.99 0.01 82);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.88 0.015 190);
-  --input: oklch(0.88 0.015 190);
-  --ring: oklch(0.58 0.11 180);
+  --border: oklch(0.88 0.035 164);
+  --input: oklch(0.88 0.035 164);
+  --ring: oklch(0.6 0.14 164);
   --chart-1: oklch(0.68 0.14 180);
   --chart-2: oklch(0.72 0.16 36);
   --chart-3: oklch(0.74 0.15 78);
@@ -127,9 +127,33 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    background:
+      radial-gradient(circle at top left, oklch(0.93 0.08 164 / 0.55), transparent 32rem),
+      linear-gradient(180deg, oklch(0.99 0.015 159), oklch(0.965 0.02 159));
+    min-height: 100dvh;
   }
   html {
     @apply font-sans;
+  }
+  a,
+  button,
+  summary,
+  input,
+  select,
+  textarea {
+    @apply outline-none;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    @apply ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  ::selection {
+    background: oklch(0.9 0.11 164);
+    color: oklch(0.18 0.055 169);
   }
 }
 
@@ -146,4 +170,15 @@ body {
 
 .animate-fade-up {
   animation: fade-up 700ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
 }

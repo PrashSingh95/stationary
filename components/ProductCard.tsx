@@ -15,25 +15,25 @@ export function ProductCard({ product }: { product: Product }) {
   const hasDiscount = discountPercent > 0;
 
   return (
-    <article className="group overflow-hidden rounded-lg border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <Link href={`/products/${product.slug}`} className="block p-3">
+    <article className="group overflow-hidden rounded-lg border border-emerald-900/10 bg-card shadow-sm shadow-emerald-950/5 transition duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-950/10">
+      <Link href={`/products/${product.slug}`} className="block p-3 pb-2">
         <ProductVisual type={product.images[0]} label={product.name} />
       </Link>
       <div className="space-y-3 px-4 pb-4">
         <div>
-          <p className="text-xs font-semibold uppercase text-teal-700">
+          <p className="text-xs font-bold uppercase text-emerald-700">
             {product.brand}
           </p>
           <Link
             href={`/products/${product.slug}`}
-            className="mt-1 block text-base font-semibold transition hover:text-teal-700"
+            className="mt-1 block min-h-12 text-base font-bold leading-6 transition hover:text-emerald-700"
           >
             {product.name}
           </Link>
         </div>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold">
+            <span className="text-xl font-black tabular-nums text-emerald-950">
               ₹{hasDiscount ? discountedPrice : product.price}
             </span>
             {hasDiscount || product.originalPrice ? (
@@ -43,7 +43,7 @@ export function ProductCard({ product }: { product: Product }) {
             ) : null}
           </div>
           <span
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
               product.inStock
                 ? 'bg-emerald-100 text-emerald-800'
                 : 'bg-rose-100 text-rose-800'
@@ -54,14 +54,14 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         </div>
         {hasDiscount ? (
-          <p className="text-xs font-semibold text-emerald-700">
+          <p className="inline-flex rounded-full bg-orange-100 px-2.5 py-1 text-xs font-bold text-orange-800">
             {discountPercent}% product discount
           </p>
         ) : null}
         <div className="grid gap-2">
-          <AddToCartButton product={product} className="h-9 w-full" />
+          <AddToCartButton product={product} className="h-10 w-full" />
           <a
-            className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold transition hover:border-teal-300"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-emerald-900/10 bg-white px-3 text-sm font-bold transition hover:border-emerald-300 hover:bg-emerald-50"
             href={makeWhatsAppUrl(product)}
             target="_blank"
             rel="noreferrer"
