@@ -30,6 +30,7 @@ create table if not exists products (
   brand text not null,
   price integer not null check (price >= 0),
   original_price integer check (original_price is null or original_price >= price),
+  discount_percent integer not null default 0 check (discount_percent >= 0 and discount_percent <= 100),
   images text[] not null default '{}',
   specs text[] not null default '{}',
   stock_quantity integer not null default 0 check (stock_quantity >= 0),

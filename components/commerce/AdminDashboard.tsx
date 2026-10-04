@@ -15,6 +15,10 @@ import {
 
 import { ProductVisual } from '@/components/ProductVisual';
 import { useCommerce } from '@/components/commerce/CommerceProvider';
+import {
+  getProductPricing,
+  normalizeDiscountPercent,
+} from '@/lib/commerce/pricing';
 import { productImageMap } from '@/lib/product-images';
 import type { OrderStatus } from '@/types/commerce';
 import type { Category, Product } from '@/types/product';
@@ -88,11 +92,11 @@ export function AdminDashboard() {
     createCategory,
   } = useCommerce();
   const [form, setForm] = useState<ProductForm>(emptyForm);
-  const [categoryForm, setCategoryForm] = useState<CategoryForm>(
-    emptyCategoryForm,
-  );
+  const [categoryForm, setCategoryForm] =
+    useState<CategoryForm>(emptyCategoryForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [imageError, setImageError] = useState('');
+  const pricingPreview = getFormPricing(form);
 
   const revenue = orders.reduce((sum, order) => sum + order.total, 0);
   const lowStock = products.filter(
@@ -104,7 +108,8 @@ export function AdminDashboard() {
   );
   const categoryCounts = categories.map((category) => ({
     ...category,
-    count: products.filter((product) => product.category === category.slug).length,
+    count: products.filter((product) => product.category === category.slug)
+      .length,
   }));
 
   if (!user) {
@@ -173,14 +178,16 @@ export function AdminDashboard() {
       description: product.description,
       category: product.category,
       brand: product.brand,
-      price: String(product.price),
-      originalPrice: product.originalPrice ? String(product.originalPrice) : '',
+      price: String(getProductPricing(product).sellingPrice),
+      originalPrice: String(product.originalPrice ?? product.price),
       discountPercent: product.discountPercent
         ? String(product.discountPercent)
         : '',
       image: product.images[0] ?? 'notebook',
       specs: product.specs.join(', '),
-      stockQuantity: String(product.stockQuantity ?? (product.inStock ? 20 : 0)),
+      stockQuantity: String(
+        product.stockQuantity ?? (product.inStock ? 20 : 0),
+      ),
       featured: product.featured,
       popular: Boolean(product.popular),
     });
@@ -302,7 +309,11 @@ export function AdminDashboard() {
           onSubmit={submitProduct}
         >
           <h2 className="flex items-center gap-2 text-lg font-bold">
-            {editingId ? <Pencil className="size-5" /> : <Plus className="size-5" />}
+            {editingId ? (
+              <Pencil className="size-5" />
+            ) : (
+              <Plus className="size-5" />
+            )}
             {editingId ? 'Edit product' : 'Add product'}
           </h2>
           <div className="mt-4 grid gap-3">
@@ -340,17 +351,18 @@ export function AdminDashboard() {
             />
             <div className="grid gap-3 sm:grid-cols-2">
               <AdminInput
-                label="Price"
-                onChange={(value) => updateForm('price', value)}
-                required
-                type="number"
-                value={form.price}
-              />
-              <AdminInput
                 label="Original price"
                 onChange={(value) => updateForm('originalPrice', value)}
+                required
                 type="number"
                 value={form.originalPrice}
+              />
+              <AdminInput
+                disabled
+                label="Selling price"
+                onChange={() => undefined}
+                type="number"
+                value={String(pricingPreview.sellingPrice)}
               />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -371,7 +383,10 @@ export function AdminDashboard() {
             <div className="grid gap-4 rounded-lg border border-border p-4">
               <p className="text-sm font-semibold">Product image</p>
               <div className="grid gap-4 sm:grid-cols-[110px_1fr]">
-                <ProductVisual label={form.name || 'Product image'} type={form.image} />
+                <ProductVisual
+                  label={form.name || 'Product image'}
+                  type={form.image}
+                />
                 <div className="grid gap-4">
                   <label>
                     <span className="text-sm font-medium">Upload image</span>
@@ -391,12 +406,10 @@ export function AdminDashboard() {
                     <span className="text-sm font-medium">Choose preset</span>
                     <select
                       className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
-                      onChange={(event) => updateForm('image', event.target.value)}
-                      value={
-                        form.image in productImageMap
-                          ? form.image
-                          : ''
+                      onChange={(event) =>
+                        updateForm('image', event.target.value)
                       }
+                      value={form.image in productImageMap ? form.image : ''}
                     >
                       <option value="">Uploaded/custom image</option>
                       {Object.keys(productImageMap).map((key) => (
@@ -501,8 +514,23 @@ export function AdminDashboard() {
                         </div>
                       </td>
                       <td>{categoryName(categories, product.category)}</td>
-                      <td>₹{product.price}</td>
-                      <td>{product.discountPercent ? `${product.discountPercent}%` : 'None'}</td>
+                      <td>
+                        <div className="font-semibold">
+                          ₹{getProductPricing(product).sellingPrice}
+                        </div>
+                        {product.originalPrice &&
+                        product.originalPrice >
+                          getProductPricing(product).sellingPrice ? (
+                          <div className="text-xs text-muted-foreground">
+                            MRP ₹{product.originalPrice}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td>
+                        {product.discountPercent
+                          ? `${product.discountPercent}%`
+                          : 'None'}
+                      </td>
                       <td>
                         <input
                           aria-label={`Stock quantity for ${product.name}`}
@@ -592,9 +620,7 @@ export function AdminDashboard() {
               />
               <AdminInput
                 label="Slug"
-                onChange={(value) =>
-                  updateCategoryForm('slug', slugify(value))
-                }
+                onChange={(value) => updateCategoryForm('slug', slugify(value))}
                 required
                 value={categoryForm.slug}
               />
@@ -619,17 +645,20 @@ export function AdminDashboard() {
           <div>
             <h2 className="text-lg font-bold">Categories</h2>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {categoryCounts.map((category) => (
-            <div className="rounded-lg border border-border p-4" key={category.slug}>
-              <span className="inline-flex rounded-full bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
-                {category.count} products
-              </span>
-              <p className="mt-3 font-semibold">{category.name}</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                {category.description}
-              </p>
-            </div>
-          ))}
+              {categoryCounts.map((category) => (
+                <div
+                  className="rounded-lg border border-border p-4"
+                  key={category.slug}
+                >
+                  <span className="inline-flex rounded-full bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
+                    {category.count} products
+                  </span>
+                  <p className="mt-3 font-semibold">{category.name}</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {category.description}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -642,6 +671,7 @@ function AdminInput({
   label,
   value,
   onChange,
+  disabled,
   placeholder,
   required,
   type = 'text',
@@ -649,6 +679,7 @@ function AdminInput({
   label: string;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
   placeholder?: string;
   required?: boolean;
   type?: string;
@@ -658,6 +689,7 @@ function AdminInput({
       <span className="text-sm font-medium">{label}</span>
       <input
         className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+        disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         required={required}
@@ -708,9 +740,7 @@ function AdminCheckbox({
 
 function formToProduct(form: ProductForm, editingId: string | null): Product {
   const stockQuantity = Math.max(0, Number(form.stockQuantity) || 0);
-  const price = Math.max(0, Number(form.price) || 0);
-  const originalPrice = Number(form.originalPrice) || undefined;
-  const discountPercent = normalizePercent(Number(form.discountPercent) || 0);
+  const pricing = getFormPricing(form);
   const slug = slugify(form.slug || form.name);
 
   return {
@@ -720,9 +750,9 @@ function formToProduct(form: ProductForm, editingId: string | null): Product {
     description: form.description.trim(),
     category: form.category,
     brand: form.brand.trim(),
-    price,
-    originalPrice,
-    discountPercent,
+    price: pricing.sellingPrice,
+    originalPrice: pricing.discountPercent > 0 ? pricing.mrp : undefined,
+    discountPercent: pricing.discountPercent,
     images: [form.image.trim() || 'notebook'],
     inStock: stockQuantity > 0,
     featured: form.featured,
@@ -735,8 +765,24 @@ function formToProduct(form: ProductForm, editingId: string | null): Product {
   };
 }
 
-function normalizePercent(value: number) {
-  return Math.max(0, Math.min(100, value));
+function getFormPricing(form: ProductForm) {
+  const mrp = Math.max(
+    0,
+    Number(form.originalPrice) || Number(form.price) || 0,
+  );
+  const discountPercent = normalizeDiscountPercent(
+    Number(form.discountPercent) || 0,
+  );
+  const sellingPrice =
+    discountPercent > 0
+      ? Math.max(0, Math.round(mrp - (mrp * discountPercent) / 100))
+      : mrp;
+
+  return {
+    mrp,
+    sellingPrice,
+    discountPercent,
+  };
 }
 
 function formToCategory(form: CategoryForm): Category {
@@ -764,7 +810,10 @@ function resizeImage(file: File) {
       image.onerror = () => reject(new Error('Could not load image.'));
       image.onload = () => {
         const maxSize = 900;
-        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const scale = Math.min(
+          1,
+          maxSize / Math.max(image.width, image.height),
+        );
         const width = Math.max(1, Math.round(image.width * scale));
         const height = Math.max(1, Math.round(image.height * scale));
         const canvas = document.createElement('canvas');

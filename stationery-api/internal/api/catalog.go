@@ -17,20 +17,21 @@ type categoryResponse struct {
 }
 
 type productResponse struct {
-	ID            string   `json:"id"`
-	Name          string   `json:"name"`
-	Slug          string   `json:"slug"`
-	Description   string   `json:"description"`
-	Category      string   `json:"category"`
-	Brand         string   `json:"brand"`
-	Price         int      `json:"price"`
-	OriginalPrice *int     `json:"originalPrice,omitempty"`
-	Images        []string `json:"images"`
-	InStock       bool     `json:"inStock"`
-	Featured      bool     `json:"featured"`
-	Popular       bool     `json:"popular"`
-	Specs         []string `json:"specs"`
-	StockQuantity int      `json:"stockQuantity"`
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	Slug            string   `json:"slug"`
+	Description     string   `json:"description"`
+	Category        string   `json:"category"`
+	Brand           string   `json:"brand"`
+	Price           int      `json:"price"`
+	OriginalPrice   *int     `json:"originalPrice,omitempty"`
+	DiscountPercent int      `json:"discountPercent,omitempty"`
+	Images          []string `json:"images"`
+	InStock         bool     `json:"inStock"`
+	Featured        bool     `json:"featured"`
+	Popular         bool     `json:"popular"`
+	Specs           []string `json:"specs"`
+	StockQuantity   int      `json:"stockQuantity"`
 }
 
 func (s *Server) listCategories(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +78,7 @@ func (s *Server) getCategory(w http.ResponseWriter, r *http.Request) {
 func (s *Server) listProducts(w http.ResponseWriter, r *http.Request) {
 	query := `
 		select p.id, p.name, p.slug, p.description, p.category_slug, p.brand,
-		       p.price, p.original_price, p.images, (p.stock_quantity > 0) as in_stock,
+		       p.price, p.original_price, p.discount_percent, p.images, (p.stock_quantity > 0) as in_stock,
 		       p.is_featured, p.is_popular, p.specs, p.stock_quantity
 		from products p
 		where p.is_active = true
@@ -109,7 +110,7 @@ func (s *Server) getProduct(w http.ResponseWriter, r *http.Request) {
 	products, err := s.queryProducts(
 		r,
 		`select p.id, p.name, p.slug, p.description, p.category_slug, p.brand,
-		        p.price, p.original_price, p.images, (p.stock_quantity > 0) as in_stock,
+		        p.price, p.original_price, p.discount_percent, p.images, (p.stock_quantity > 0) as in_stock,
 		        p.is_featured, p.is_popular, p.specs, p.stock_quantity
 		 from products p
 		 where p.is_active = true and p.slug = $1`,
@@ -132,7 +133,7 @@ func (s *Server) getCategoryProducts(w http.ResponseWriter, r *http.Request) {
 	products, err := s.queryProducts(
 		r,
 		`select p.id, p.name, p.slug, p.description, p.category_slug, p.brand,
-		        p.price, p.original_price, p.images, (p.stock_quantity > 0) as in_stock,
+		        p.price, p.original_price, p.discount_percent, p.images, (p.stock_quantity > 0) as in_stock,
 		        p.is_featured, p.is_popular, p.specs, p.stock_quantity
 		 from products p
 		 where p.is_active = true and p.category_slug = $1
@@ -179,6 +180,7 @@ func (s *Server) queryProducts(r *http.Request, query string, args ...any) ([]pr
 			&product.Brand,
 			&product.Price,
 			&originalPrice,
+			&product.DiscountPercent,
 			&product.Images,
 			&product.InStock,
 			&product.Featured,

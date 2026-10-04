@@ -11,6 +11,7 @@ import {
 
 import { products } from '@/data/products';
 import { categories } from '@/data/categories';
+import { getProductPricing } from '@/lib/commerce/pricing';
 import type {
   Address,
   CartLine,
@@ -128,21 +129,16 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         .map((line) => {
           const product = productsById.get(line.productId);
           if (!product) return null;
-          const subtotal = product.price * line.quantity;
-          const discountPercent = normalizeDiscountPercent(
-            product.discountPercent,
-          );
-          const discountAmount = calculateDiscountAmount(
-            subtotal,
-            discountPercent,
-          );
+          const pricing = getProductPricing(product);
+          const subtotal = pricing.mrp * line.quantity;
+          const discountAmount = pricing.discountAmount * line.quantity;
           return {
             product,
             quantity: line.quantity,
             subtotal,
-            discountPercent,
+            discountPercent: pricing.discountPercent,
             discountAmount,
-            total: Math.max(0, subtotal - discountAmount),
+            total: pricing.sellingPrice * line.quantity,
           };
         })
         .filter(Boolean) as Array<{
@@ -189,7 +185,11 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     cartGrandTotal,
     login(email) {
       const role = email.toLowerCase().includes('admin') ? 'admin' : 'customer';
-      return upsertUser(role === 'admin' ? 'Shop Admin' : 'Customer', email, role);
+      return upsertUser(
+        role === 'admin' ? 'Shop Admin' : 'Customer',
+        email,
+        role,
+      );
     },
     register(name, email) {
       return upsertUser(name, email, 'customer');
@@ -199,7 +199,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     },
     addToCart(product, quantity = 1) {
       setState((current) => {
-        const existing = current.cart.find((line) => line.productId === product.id);
+        const existing = current.cart.find(
+          (line) => line.productId === product.id,
+        );
         const cart = existing
           ? current.cart.map((line) =>
               line.productId === product.id
@@ -232,13 +234,12 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       setState((current) => ({ ...current, cart: [] }));
     },
     placeOrder(input) {
-      const user =
-        state.user ?? {
-          id: 'guest',
-          name: 'Guest Customer',
-          email: 'guest@bpb.local',
-          role: 'customer',
-        };
+      const user = state.user ?? {
+        id: 'guest',
+        name: 'Guest Customer',
+        email: 'guest@bpb.local',
+        role: 'customer',
+      };
       const address = { ...input.address, id: `addr-${Date.now()}` };
       const order: Order = {
         id: `BPB-${Date.now().toString().slice(-8)}`,
@@ -260,7 +261,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         cart: [],
         orders: [order, ...current.orders],
         products: current.products.map((product) => {
-          const ordered = cartItems.find((item) => item.product.id === product.id);
+          const ordered = cartItems.find(
+            (item) => item.product.id === product.id,
+          );
           if (!ordered) return product;
           const nextStock = Math.max(
             0,
@@ -290,8 +293,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         products: [
           {
             ...product,
-            stockQuantity:
-              product.stockQuantity ?? (product.inStock ? 1 : 0),
+            stockQuantity: product.stockQuantity ?? (product.inStock ? 1 : 0),
             inStock: (product.stockQuantity ?? (product.inStock ? 1 : 0)) > 0,
           },
           ...current.products.filter((item) => item.id !== product.id),
@@ -317,7 +319,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     deleteProduct(productId) {
       setState((current) => ({
         ...current,
-        products: current.products.filter((product) => product.id !== productId),
+        products: current.products.filter(
+          (product) => product.id !== productId,
+        ),
         cart: current.cart.filter((line) => line.productId !== productId),
       }));
     },
@@ -333,7 +337,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
                 inStock: nextStock > 0,
               }
             : product,
-          ),
+        ),
       }));
     },
     createCategory(category) {
@@ -352,14 +356,6 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       {children}
     </CommerceContext.Provider>
   );
-}
-
-function normalizeDiscountPercent(value: number | undefined) {
-  return Math.max(0, Math.min(100, Number(value) || 0));
-}
-
-function calculateDiscountAmount(subtotal: number, discountPercent: number) {
-  return Math.round((subtotal * discountPercent) / 100);
 }
 
 export function useCommerce() {

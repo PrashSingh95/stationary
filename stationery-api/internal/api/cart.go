@@ -124,7 +124,7 @@ func (s *Server) loadCart(r *http.Request, userID string) (cartResponse, error) 
 		r.Context(),
 		`select c.id::text, c.quantity,
 		        p.id, p.name, p.slug, p.description, p.category_slug, p.brand,
-		        p.price, p.original_price, p.images, (p.stock_quantity > 0) as in_stock,
+		        p.price, p.original_price, p.discount_percent, p.images, (p.stock_quantity > 0) as in_stock,
 		        p.is_featured, p.is_popular, p.specs, p.stock_quantity
 		 from cart_items c
 		 join products p on p.id = c.product_id
@@ -152,6 +152,7 @@ func (s *Server) loadCart(r *http.Request, userID string) (cartResponse, error) 
 			&item.Product.Brand,
 			&item.Product.Price,
 			&originalPrice,
+			&item.Product.DiscountPercent,
 			&item.Product.Images,
 			&item.Product.InStock,
 			&item.Product.Featured,

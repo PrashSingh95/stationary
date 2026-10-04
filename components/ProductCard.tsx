@@ -3,16 +3,13 @@ import { MessageCircle, PackageCheck } from 'lucide-react';
 
 import { AddToCartButton } from '@/components/commerce/AddToCartButton';
 import { makeWhatsAppUrl } from '@/data/shop';
+import { getProductPricing } from '@/lib/commerce/pricing';
 import type { Product } from '@/types/product';
 import { ProductVisual } from '@/components/ProductVisual';
 
 export function ProductCard({ product }: { product: Product }) {
-  const discountPercent = product.discountPercent ?? 0;
-  const discountedPrice = Math.max(
-    0,
-    Math.round(product.price - (product.price * discountPercent) / 100),
-  );
-  const hasDiscount = discountPercent > 0;
+  const pricing = getProductPricing(product);
+  const showMrp = pricing.mrp > pricing.sellingPrice;
 
   return (
     <article className="group overflow-hidden rounded-lg border border-emerald-900/10 bg-card shadow-sm shadow-emerald-950/5 transition duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-950/10">
@@ -34,11 +31,11 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-2">
             <span className="text-xl font-black tabular-nums text-emerald-950">
-              ₹{hasDiscount ? discountedPrice : product.price}
+              ₹{pricing.sellingPrice}
             </span>
-            {hasDiscount || product.originalPrice ? (
+            {showMrp ? (
               <span className="text-sm text-muted-foreground line-through">
-                ₹{product.originalPrice ?? product.price}
+                ₹{pricing.mrp}
               </span>
             ) : null}
           </div>
@@ -53,9 +50,9 @@ export function ProductCard({ product }: { product: Product }) {
             {product.inStock ? 'In stock' : 'Ask shop'}
           </span>
         </div>
-        {hasDiscount ? (
+        {pricing.hasDiscount ? (
           <p className="inline-flex rounded-full bg-orange-100 px-2.5 py-1 text-xs font-bold text-orange-800">
-            {discountPercent}% product discount
+            {pricing.discountPercent}% product discount
           </p>
         ) : null}
         <div className="grid gap-2">

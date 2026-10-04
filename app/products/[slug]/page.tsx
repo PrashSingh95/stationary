@@ -9,6 +9,7 @@ import { SiteShell } from '@/components/SiteShell';
 import { products } from '@/data/products';
 import { makeWhatsAppUrl } from '@/data/shop';
 import { getCategory, getProduct } from '@/lib/api/products';
+import { getProductPricing } from '@/lib/commerce/pricing';
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
@@ -23,9 +24,11 @@ export async function generateMetadata({
 
   if (!product) return {};
 
+  const pricing = getProductPricing(product);
+
   return {
     title: product.name,
-    description: `${product.name} from ${product.brand}. Price Rs. ${product.price}. ${product.inStock ? 'In stock' : 'Ask the shop for availability'}.`,
+    description: `${product.name} from ${product.brand}. Price Rs. ${pricing.sellingPrice}. ${product.inStock ? 'In stock' : 'Ask the shop for availability'}.`,
     openGraph: {
       title: product.name,
       description: product.description,
@@ -44,12 +47,8 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   const category = await getCategory(product.category);
-  const discountPercent = product.discountPercent ?? 0;
-  const discountedPrice = Math.max(
-    0,
-    Math.round(product.price - (product.price * discountPercent) / 100),
-  );
-  const hasDiscount = discountPercent > 0;
+  const pricing = getProductPricing(product);
+  const showMrp = pricing.mrp > pricing.sellingPrice;
 
   return (
     <SiteShell>
@@ -63,11 +62,7 @@ export default async function ProductDetailPage({
         </Link>
 
         <section className="grid gap-8 lg:grid-cols-[1fr_0.9fr]">
-          <ProductVisual
-            type={product.images[0]}
-            label={product.name}
-            large
-          />
+          <ProductVisual type={product.images[0]} label={product.name} large />
 
           <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
             <div className="flex flex-wrap gap-2">
@@ -94,16 +89,16 @@ export default async function ProductDetailPage({
 
             <div className="mt-6 flex flex-wrap items-end gap-3">
               <span className="text-4xl font-black">
-                ₹{hasDiscount ? discountedPrice : product.price}
+                ₹{pricing.sellingPrice}
               </span>
-              {hasDiscount || product.originalPrice ? (
+              {showMrp ? (
                 <span className="pb-1 text-lg text-muted-foreground line-through">
-                  ₹{product.originalPrice ?? product.price}
+                  ₹{pricing.mrp}
                 </span>
               ) : null}
-              {hasDiscount ? (
+              {pricing.hasDiscount ? (
                 <span className="mb-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
-                  {discountPercent}% off
+                  {pricing.discountPercent}% off
                 </span>
               ) : null}
             </div>
