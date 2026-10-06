@@ -1,8 +1,7 @@
 import Link from 'next/link';
-import { MessageCircle, PackageCheck } from 'lucide-react';
+import { PackageCheck } from 'lucide-react';
 
 import { AddToCartButton } from '@/components/commerce/AddToCartButton';
-import { makeWhatsAppUrl } from '@/data/shop';
 import { getProductPricing } from '@/lib/commerce/pricing';
 import type { Product } from '@/types/product';
 import { ProductVisual } from '@/components/ProductVisual';
@@ -57,15 +56,6 @@ export function ProductCard({ product }: { product: Product }) {
         ) : null}
         <div className="grid gap-2">
           <AddToCartButton product={product} className="h-10 w-full" />
-          <a
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-bold text-white shadow-sm shadow-emerald-900/10 transition hover:bg-emerald-700"
-            href={makeWhatsAppUrl(product)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <MessageCircle className="size-4" />
-            WhatsApp
-          </a>
         </div>
       </div>
     </article>
