@@ -7,6 +7,7 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { ProductCard } from '@/components/ProductCard';
 import { useCommerce } from '@/components/commerce/CommerceProvider';
+import { getProductPricing } from '@/lib/commerce/pricing';
 
 type SortMode = 'popular' | 'low' | 'high';
 
@@ -43,9 +44,13 @@ export function ShopFilters({
         return matchesCategory && text.includes(normalizedQuery);
       })
       .sort((a, b) => {
-        if (sort === 'low') return a.price - b.price;
-        if (sort === 'high') return b.price - a.price;
-        return Number(b.popular || b.featured) - Number(a.popular || a.featured);
+        const aPrice = getProductPricing(a).sellingPrice;
+        const bPrice = getProductPricing(b).sellingPrice;
+        if (sort === 'low') return aPrice - bPrice;
+        if (sort === 'high') return bPrice - aPrice;
+        return (
+          Number(b.popular || b.featured) - Number(a.popular || a.featured)
+        );
       });
   }, [category, displayProducts, query, sort]);
 
@@ -53,6 +58,7 @@ export function ShopFilters({
     <section className="space-y-6">
       <div className="grid gap-3 rounded-lg border border-border bg-card p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_210px]">
         <label className="relative block">
+          <span className="sr-only">Search products</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             className="h-11 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
@@ -62,6 +68,7 @@ export function ShopFilters({
           />
         </label>
         <label className="relative block">
+          <span className="sr-only">Sort products</span>
           <SlidersHorizontal className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <select
             className="h-11 w-full appearance-none rounded-lg border border-input bg-background pl-10 pr-8 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"

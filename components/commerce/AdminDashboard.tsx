@@ -95,6 +95,7 @@ export function AdminDashboard() {
   const [categoryForm, setCategoryForm] =
     useState<CategoryForm>(emptyCategoryForm);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formError, setFormError] = useState('');
   const [imageError, setImageError] = useState('');
   const pricingPreview = getFormPricing(form);
 
@@ -149,6 +150,7 @@ export function AdminDashboard() {
 
   function updateForm(field: keyof ProductForm, value: string | boolean) {
     if (field === 'image') setImageError('');
+    setFormError('');
     setForm((current) => {
       const next = { ...current, [field]: value };
       if (field === 'name' && !editingId) {
@@ -195,6 +197,11 @@ export function AdminDashboard() {
 
   function submitProduct(event: { preventDefault: () => void }) {
     event.preventDefault();
+    const error = validateProductForm(form);
+    if (error) {
+      setFormError(error);
+      return;
+    }
     const product = formToProduct(form, editingId);
     if (editingId) {
       updateProduct(product);
@@ -202,6 +209,7 @@ export function AdminDashboard() {
       createProduct(product);
     }
     setEditingId(null);
+    setFormError('');
     setImageError('');
     setForm(emptyForm);
   }
@@ -317,6 +325,14 @@ export function AdminDashboard() {
             {editingId ? 'Edit product' : 'Add product'}
           </h2>
           <div className="mt-4 grid gap-3">
+            {formError ? (
+              <p
+                className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700"
+                role="alert"
+              >
+                {formError}
+              </p>
+            ) : null}
             <AdminInput
               label="Name"
               onChange={(value) => updateForm('name', value)}
@@ -355,6 +371,7 @@ export function AdminDashboard() {
                 onChange={(value) => updateForm('originalPrice', value)}
                 required
                 type="number"
+                min={0}
                 value={form.originalPrice}
               />
               <AdminInput
@@ -371,12 +388,15 @@ export function AdminDashboard() {
                 onChange={(value) => updateForm('stockQuantity', value)}
                 required
                 type="number"
+                min={0}
                 value={form.stockQuantity}
               />
               <AdminInput
                 label="Discount %"
                 onChange={(value) => updateForm('discountPercent', value)}
                 type="number"
+                min={0}
+                max={100}
                 value={form.discountPercent}
               />
             </div>
@@ -467,6 +487,7 @@ export function AdminDashboard() {
                 className="h-10 rounded-lg border border-border px-4 text-sm font-semibold"
                 onClick={() => {
                   setEditingId(null);
+                  setFormError('');
                   setImageError('');
                   setForm(emptyForm);
                 }}
@@ -570,7 +591,15 @@ export function AdminDashboard() {
                           <button
                             aria-label={`Delete ${product.name}`}
                             className="grid size-9 place-items-center rounded-lg border border-border text-rose-700 hover:bg-rose-50"
-                            onClick={() => deleteProduct(product.id)}
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  `Delete ${product.name}? This removes it from the storefront.`,
+                                )
+                              ) {
+                                deleteProduct(product.id);
+                              }
+                            }}
                             type="button"
                           >
                             <Trash2 className="size-4" />
@@ -672,6 +701,8 @@ function AdminInput({
   value,
   onChange,
   disabled,
+  max,
+  min,
   placeholder,
   required,
   type = 'text',
@@ -680,6 +711,8 @@ function AdminInput({
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  max?: number;
+  min?: number;
   placeholder?: string;
   required?: boolean;
   type?: string;
@@ -690,6 +723,8 @@ function AdminInput({
       <input
         className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
         disabled={disabled}
+        max={max}
+        min={min}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         required={required}
@@ -763,6 +798,23 @@ function formToProduct(form: ProductForm, editingId: string | null): Product {
       .filter(Boolean),
     stockQuantity,
   };
+}
+
+function validateProductForm(form: ProductForm) {
+  const mrp = Number(form.originalPrice) || Number(form.price) || 0;
+  const discountPercent = Number(form.discountPercent) || 0;
+  const stockQuantity = Number(form.stockQuantity) || 0;
+
+  if (mrp <= 0) return 'Original price must be greater than 0.';
+  if (discountPercent < 0 || discountPercent > 100) {
+    return 'Discount must be between 0 and 100%.';
+  }
+  if (discountPercent > 0 && !form.originalPrice) {
+    return 'Original price is required when adding a discount.';
+  }
+  if (stockQuantity < 0) return 'Stock cannot be negative.';
+
+  return '';
 }
 
 function getFormPricing(form: ProductForm) {

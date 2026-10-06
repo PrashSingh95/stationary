@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, Search, ShoppingBag } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
 
 export function Navbar() {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
   const isProductsPage = pathname === '/products';
   const links = [
     ['Categories', '/categories'],
@@ -40,7 +42,8 @@ export function Navbar() {
         <nav className="hidden items-center gap-1 md:flex">
           {links.map(([label, href]) => {
             const isActive =
-              pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
+              pathname === href ||
+              (href !== '/' && pathname.startsWith(`${href}/`));
 
             return (
               <Link
@@ -79,31 +82,40 @@ export function Navbar() {
           >
             WhatsApp us
           </Link>
-          <details className="relative md:hidden">
-            <summary className="grid size-10 cursor-pointer list-none place-items-center rounded-lg border border-emerald-900/10 bg-white">
+          <div className="relative md:hidden">
+            <button
+              aria-expanded={menuOpen}
+              aria-label="Open navigation menu"
+              className="grid size-10 cursor-pointer place-items-center rounded-lg border border-emerald-900/10 bg-white"
+              onClick={() => setMenuOpen((current) => !current)}
+              type="button"
+            >
               <Menu className="size-4" />
-            </summary>
-            <div className="absolute right-0 top-12 w-52 rounded-lg border border-emerald-900/10 bg-card p-2 shadow-xl shadow-emerald-950/10">
-              {links.map(([label, href]) => {
-                const isActive =
-                  pathname === href ||
-                  (href !== '/' && pathname.startsWith(`${href}/`));
+            </button>
+            {menuOpen ? (
+              <div className="absolute right-0 top-12 w-52 rounded-lg border border-emerald-900/10 bg-card p-2 shadow-xl shadow-emerald-950/10">
+                {links.map(([label, href]) => {
+                  const isActive =
+                    pathname === href ||
+                    (href !== '/' && pathname.startsWith(`${href}/`));
 
-                return (
-                  <Link
-                    aria-current={isActive ? 'page' : undefined}
-                    className={`block rounded-md px-3 py-2 text-sm font-semibold hover:bg-emerald-50 ${
-                      isActive ? 'bg-emerald-100 text-emerald-950' : ''
-                    }`}
-                    href={href}
-                    key={href}
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
-            </div>
-          </details>
+                  return (
+                    <Link
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`block rounded-md px-3 py-2 text-sm font-semibold hover:bg-emerald-50 ${
+                        isActive ? 'bg-emerald-100 text-emerald-950' : ''
+                      }`}
+                      href={href}
+                      key={href}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </header>

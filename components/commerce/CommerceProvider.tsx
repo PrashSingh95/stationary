@@ -62,7 +62,7 @@ type CommerceContextValue = {
   createCategory: (category: Category) => void;
 };
 
-const storageKey = 'bpb-commerce-v1';
+const storageKey = 'bpb-commerce-v2';
 const CommerceContext = createContext<CommerceContextValue | null>(null);
 
 type StoredState = {

@@ -5,6 +5,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 
 import { ProductVisual } from '@/components/ProductVisual';
 import { useCommerce } from '@/components/commerce/CommerceProvider';
+import { getProductPricing } from '@/lib/commerce/pricing';
 
 export function CartView() {
   const {
@@ -21,7 +22,8 @@ export function CartView() {
       <div className="rounded-lg border border-dashed border-border bg-card p-10 text-center">
         <h2 className="text-xl font-bold">Your cart is empty</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Add notebooks, pens, school supplies, or printing services to checkout.
+          Add notebooks, pens, school supplies, or printing services to
+          checkout.
         </p>
         <Link
           className="mt-6 inline-flex rounded-lg bg-teal-700 px-5 py-2 font-semibold text-white"
@@ -41,14 +43,17 @@ export function CartView() {
             className="grid gap-4 rounded-lg border border-border bg-card p-4 shadow-sm sm:grid-cols-[120px_1fr_auto]"
             key={item.product.id}
           >
-            <ProductVisual type={item.product.images[0]} label={item.product.name} />
+            <ProductVisual
+              type={item.product.images[0]}
+              label={item.product.name}
+            />
             <div>
               <p className="text-xs font-semibold uppercase text-teal-700">
                 {item.product.brand}
               </p>
               <h2 className="mt-1 font-semibold">{item.product.name}</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                ₹{item.product.price} each
+                ₹{getProductPricing(item.product).sellingPrice} each
               </p>
               <button
                 className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-rose-700"
@@ -64,7 +69,9 @@ export function CartView() {
                 <button
                   aria-label="Decrease quantity"
                   className="grid size-9 place-items-center hover:bg-muted"
-                  onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                  onClick={() =>
+                    updateQuantity(item.product.id, item.quantity - 1)
+                  }
                   type="button"
                 >
                   <Minus className="size-4" />
@@ -75,7 +82,9 @@ export function CartView() {
                 <button
                   aria-label="Increase quantity"
                   className="grid size-9 place-items-center hover:bg-muted"
-                  onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                  onClick={() =>
+                    updateQuantity(item.product.id, item.quantity + 1)
+                  }
                   type="button"
                 >
                   <Plus className="size-4" />

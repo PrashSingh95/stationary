@@ -200,8 +200,16 @@ func validProductWriteRequest(w http.ResponseWriter, r *http.Request) (productWr
 		writeError(w, http.StatusBadRequest, "INVALID_PRODUCT", "Name, slug, category, brand, and price are required")
 		return request, false
 	}
+	if request.OriginalPrice != nil && *request.OriginalPrice < 0 {
+		writeError(w, http.StatusBadRequest, "INVALID_PRODUCT_PRICE", "Original price cannot be negative")
+		return request, false
+	}
 	if request.DiscountPercent < 0 || request.DiscountPercent > 100 {
 		writeError(w, http.StatusBadRequest, "INVALID_PRODUCT_DISCOUNT", "Discount must be between 0 and 100")
+		return request, false
+	}
+	if request.DiscountPercent > 0 && request.OriginalPrice == nil {
+		writeError(w, http.StatusBadRequest, "INVALID_PRODUCT_PRICE", "Original price is required when a discount is set")
 		return request, false
 	}
 	applyProductDiscount(&request)
